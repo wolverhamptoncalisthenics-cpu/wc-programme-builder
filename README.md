@@ -1,44 +1,43 @@
 # Wolverhampton Calisthenics — Programme Builder
 
 A landing page with accounts: people do the questionnaire, create an
-account, and either get a ready-made template programme instantly
-(free/common goals) or wait for you or Tim to build theirs by hand
-(paid/advanced goals).
+account, and every programme — free or paid goal — gets built and
+assigned by you or Tim by hand.
 
 ## What changed from the AI-generation version
 
-Programmes are no longer written live by Claude. Instead:
+Programmes are no longer written live by Claude, and they're no longer
+auto-assigned from templates either. Every submission, regardless of
+goal, is saved with status `pending_coach` and waits for you or Tim to
+build it manually (a coach dashboard for doing this from within the app
+is the next build stage — for now, this happens directly in Supabase's
+Table Editor, see below).
 
-- **Free goals** (general strength, flexibility, handstand basics,
-  muscle-up) → instantly assigned one of a handful of template
-  programmes you and Tim write once, stored in the database
-- **Paid goals** (press handstand, first pull-up) → after payment and
-  unlocking, their answers are saved and marked "pending" — you build
-  their programme by hand (a coach dashboard for this is the next
-  build stage, not included yet)
-
-This also means there's no ongoing AI cost for the main flow. The
+This means there's no ongoing AI cost for the main flow. The
 `netlify/functions/generate.js` file is still there, unused for now —
 worth keeping around in case you want an AI-assisted first draft tool
-for yourselves later, but nothing currently calls it.
+for yourselves later, but nothing currently calls it. The
+`template_programmes` table in the database is also currently unused
+by the app — safe to ignore, or repurpose later if you want a "quick
+starter plan while you wait" option.
 
 ## New pieces
 
 - `src/lib/supabase.js` — connects to your Supabase project
 - `src/context/AuthContext.jsx` — tracks who's logged in across the app
-- `src/components/AuthForm.jsx` — sign up / log in, shown mid-quiz
-- `src/components/ProgrammeBuilder.jsx` — now saves answers to the
-  database instead of calling an AI
+- `src/components/AuthForm.jsx` — sign up / log in, available from the
+  header or mid-quiz
+- `src/components/ProgrammeBuilder.jsx` — saves answers to the database
+  for manual review, no auto-assignment
 - `supabase/setup.sql` — the one-time database setup script
 
 ## One-time setup: Supabase (accounts + database)
 
 1. Go to supabase.com, sign up, create a new project
 2. In the SQL Editor, paste in and run `supabase/setup.sql` — this
-   creates the accounts system, the submissions table, and seeds four
-   starter templates so there's something to test with
+   creates the accounts system and the submissions table
 3. Go to Project Settings > API, copy your **Project URL** and
-   **anon public** key
+   **anon public** (or **publishable**) key
 
 ## Deploying to Netlify
 
@@ -47,26 +46,48 @@ for yourselves later, but nothing currently calls it.
    `netlify.toml` automatically
 2. Under **Site settings > Environment variables**, add:
    - `VITE_SUPABASE_URL` — your Supabase project URL
-   - `VITE_SUPABASE_ANON_KEY` — your Supabase anon key
-   - (keep `ANTHROPIC_API_KEY` and the `UNLOCK_CODE_...` variables from
-     before if you still want the unlock-code flow for paid goals)
+   - `VITE_SUPABASE_ANON_KEY` — your Supabase anon/publishable key
+   - (keep the `UNLOCK_CODE_...` variables from before if you still
+     want the unlock-code flow for paid goals)
 3. Trigger a redeploy after adding the variables
 
-## Writing your real template programmes
+## Assigning a programme manually (until the coach dashboard exists)
 
-The four starter templates are placeholders, just enough to test with.
-In Supabase, go to **Table Editor > template_programmes** — it's a
-spreadsheet-style view. Edit the `summary`, `focus`, `quick_plan`, and
-`progression` columns directly. The `quick_plan` and `progression`
-columns hold structured data (JSON) — happy to help you edit these
-through the table editor's built-in JSON view if the format is fiddly,
-just ask.
+1. In Supabase, go to **Table Editor > submissions**
+2. Find the row for the person you're building for (sorted by
+   `created_at`, newest at the top — filter by `status = pending_coach`
+   to see who's waiting)
+3. Click into the `manual_programme` cell and paste in a JSON object
+   shaped like this:
+
+   ```json
+   {
+     "summary": "A short note to them about the approach",
+     "focus": "Short tag, e.g. Press handstand progression",
+     "quickPlan": { "days": [
+       { "day": "Day 1", "focus": "Compression + wrist prep", "exercises": [
+         { "name": "Wrist mobility flow", "prescription": "1x5 min" },
+         { "name": "Press handstand drill", "prescription": "5x3" }
+       ] }
+     ] },
+     "progression": { "phases": [
+       { "phase": "Weeks 1-4: Compression", "focus": "Building the shape", "goals": ["..."], "keyExercises": [
+         { "name": "Press handstand drill", "prescription": "5x3" }
+       ] }
+     ] }
+   }
+   ```
+4. Change `status` from `pending_coach` to `ready`
+5. They'll see it next time they log in
+
+Happy to help build a proper in-app dashboard for this whenever you're
+ready — it'd remove the need to touch Supabase directly at all.
 
 ## What's still to build (next stages)
 
 1. **Coach dashboard** — a private, login-gated page for you and Tim to
    see new "pending_coach" submissions and write/save a manual
-   programme against them
+   programme against them, without needing Supabase's table editor
 2. **Email notifications** — alert you both the moment someone submits
 3. **PWA support** — so the site installs like an app on people's phones
 

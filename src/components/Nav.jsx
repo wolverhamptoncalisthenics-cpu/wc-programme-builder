@@ -96,11 +96,11 @@ export default function Nav() {
 
       {showLogin && (
         <div
-          className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center px-4"
+          className="fixed inset-0 z-[60] bg-black/70 flex items-start sm:items-center justify-center px-4 py-8 overflow-y-auto"
           onClick={() => setShowLogin(false)}
         >
           <div
-            className="w-full max-w-sm bg-brand-dark border border-white/15 rounded-md p-6"
+            className="w-full max-w-sm bg-brand-dark border border-white/15 rounded-md p-6 my-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <AuthForm onAuthed={() => setShowLogin(false)} />
