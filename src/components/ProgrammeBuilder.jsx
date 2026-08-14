@@ -1,12 +1,9 @@
 import { useState, useEffect } from "react";
-import {
-  ChevronRight,
-  Loader2,
-  ArrowLeft,
-  Lock,
-  Check,
-} from "lucide-react";
+import { ChevronRight, Loader2, ArrowLeft, Lock, Check } from "lucide-react";
 import { GOALS } from "../data/programme";
+import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabase";
+import AuthForm from "./AuthForm";
 
 const QUESTIONS = [
   {
@@ -39,37 +36,13 @@ const QUESTIONS = [
   },
 ];
 
-function buildSystemPrompt(goalLabel, exerciseList) {
-  return `You write calisthenics training programmes for Wolverhampton Calisthenics, a community-run group. Voice: direct, encouraging, no fluff, coach-to-athlete. Never invent unsafe loading jumps — progressions should be realistic and beginner-safe where relevant.
-
-The athlete's stated goal is: ${goalLabel}. Build the entire programme around progressing toward this goal specifically.
-
-You must ONLY use exercise names from this exact list (match spelling exactly, do not invent new names): ${exerciseList}
-
-Respond with ONLY valid JSON, no markdown fences, no preamble, matching exactly this shape:
-{
-  "summary": "2-3 sentence overview of the approach for this person, written directly to them",
-  "focus": "a short 3-6 word tag describing the primary focus",
-  "quickPlan": {
-    "days": [
-      { "day": "Day 1", "focus": "short session focus", "exercises": [ { "name": "exact name from the list", "prescription": "e.g. 3x8" } ] }
-    ]
-  },
-  "progression": {
-    "phases": [
-      { "phase": "Weeks 1-2: Foundation", "focus": "short phase focus", "goals": ["...", "..."], "keyExercises": [ { "name": "exact name from the list", "prescription": "e.g. 3x8" } ] }
-    ]
-  }
-}
-The quickPlan should have one entry per training day requested. The progression should have 3-4 phases spanning roughly 8-12 weeks, building logically toward the stated goal.`;
-}
-
 const UNLOCKED_STORAGE_KEY = "wc-unlocked-goals";
 
-export default function ProgrammeBuilder({ onResult, exerciseListString }) {
-  const [step, setStep] = useState(0); // 0 = goal, 1..N = questions, N+1 = done (handled by parent)
+export default function ProgrammeBuilder({ onSubmitted }) {
+  const { user } = useAuth();
+  const [step, setStep] = useState(0); // 0 = goal, 1..N = questions, N+1 = auth/submit
   const [answers, setAnswers] = useState({ equipment: [] });
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
   const [unlockedGoals, setUnlockedGoals] = useState([]);
@@ -89,6 +62,7 @@ export default function ProgrammeBuilder({ onResult, exerciseListString }) {
 
   const totalSteps = 1 + QUESTIONS.length;
   const current = step >= 1 && step <= QUESTIONS.length ? QUESTIONS[step - 1] : null;
+  const atSubmitStep = step === totalSteps;
 
   function isUnlocked(goalId) {
     return unlockedGoals.includes(goalId);
@@ -101,7 +75,7 @@ export default function ProgrammeBuilder({ onResult, exerciseListString }) {
       setCodeError(null);
       return;
     }
-    setAnswers((a) => ({ ...a, goal: goal.label }));
+    setAnswers((a) => ({ ...a, goal: goal.label, goalId: goal.id, tier: goal.tier }));
   }
 
   async function submitCode(goal) {
@@ -119,7 +93,7 @@ export default function ProgrammeBuilder({ onResult, exerciseListString }) {
         setUnlockedGoals(next);
         localStorage.setItem(UNLOCKED_STORAGE_KEY, JSON.stringify(next));
         setUnlockTarget(null);
-        setAnswers((a) => ({ ...a, goal: goal.label }));
+        setAnswers((a) => ({ ...a, goal: goal.label, goalId: goal.id, tier: goal.tier }));
       } else {
         setCodeError("That code doesn't look right. Double check it and try again.");
       }
@@ -152,45 +126,65 @@ export default function ProgrammeBuilder({ onResult, exerciseListString }) {
     return Boolean(answers[current.key]);
   }
 
-  async function generateProgramme() {
-    setLoading(true);
+  async function submitQuestionnaire() {
+    setSubmitting(true);
     setError(null);
-    const userPrompt = `Athlete answers:
-- Goal: ${answers.goal}
-- Current level: ${answers.level}
-- Training days per week: ${answers.days}
-- Equipment: ${(answers.equipment || []).join(", ") || "not specified"}
-- Injuries/limitations: ${answers.limitations || "none mentioned"}
-
-Build their personalised programme now.`;
 
     try {
-      const response = await fetch(import.meta.env.VITE_API_URL || "/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system: buildSystemPrompt(answers.goal, exerciseListString),
-          messages: [{ role: "user", content: userPrompt }],
-        }),
+      let status = "pending_coach";
+      let assignedTemplateId = null;
+      let templateData = null;
+
+      if (answers.tier === "free") {
+        const { data: template } = await supabase
+          .from("template_programmes")
+          .select("*")
+          .eq("goal_id", answers.goalId)
+          .maybeSingle();
+
+        if (template) {
+          status = "assigned";
+          assignedTemplateId = template.id;
+          templateData = template;
+        }
+      }
+
+      const { error: insertError } = await supabase.from("submissions").insert({
+        user_id: user.id,
+        goal_id: answers.goalId,
+        goal_label: answers.goal,
+        level: answers.level,
+        days: answers.days,
+        equipment: answers.equipment,
+        limitations: answers.limitations || null,
+        status,
+        assigned_template_id: assignedTemplateId,
       });
-      const data = await response.json();
-      const text = (data.content || [])
-        .filter((b) => b.type === "text")
-        .map((b) => b.text)
-        .join("\n");
-      const cleaned = text.replace(/```json|```/g, "").trim();
-      const parsed = JSON.parse(cleaned);
-      onResult(parsed, answers.goal);
+
+      if (insertError) throw insertError;
+
+      onSubmitted({
+        status,
+        plan: templateData
+          ? {
+              summary: templateData.summary,
+              focus: templateData.focus,
+              quickPlan: templateData.quick_plan,
+              progression: templateData.progression,
+            }
+          : null,
+        goal: answers.goal,
+      });
     } catch (e) {
-      setError("Couldn't build your programme just then. Give it another go.");
+      setError("Something went wrong saving that. Give it another go.");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   }
 
   function next() {
     if (step === totalSteps - 1) {
-      generateProgramme();
+      setStep(totalSteps); // move to auth/submit step
     } else {
       setStep((s) => s + 1);
     }
@@ -365,22 +359,47 @@ Build their personalised programme now.`;
             </button>
             <button
               onClick={next}
-              disabled={!canAdvance() || loading}
+              disabled={!canAdvance()}
               className="flex-1 bg-brand-orange hover:brightness-110 disabled:bg-white/10 disabled:text-white/30 transition-all text-brand-dark font-display font-bold uppercase tracking-wide py-3 rounded-sm flex items-center justify-center gap-2"
             >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : step === totalSteps - 1 ? (
-                "Build my programme"
-              ) : (
-                <>
-                  Next <ChevronRight className="w-4 h-4" strokeWidth={3} />
-                </>
-              )}
+              Next <ChevronRight className="w-4 h-4" strokeWidth={3} />
             </button>
           </div>
+        </div>
+      )}
+
+      {/* AUTH + SUBMIT STEP */}
+      {atSubmitStep && (
+        <div className="space-y-6">
+          <div>
+            <span className="font-display font-bold text-brand-orange text-sm tracking-widest uppercase">
+              Almost there
+            </span>
+            <h2 className="font-display font-bold text-2xl leading-tight mt-1">
+              {user ? "Ready to submit" : "Create your account to get your programme"}
+            </h2>
+          </div>
+
+          {!user && <AuthForm onAuthed={submitQuestionnaire} />}
+
+          {user && (
+            <button
+              onClick={submitQuestionnaire}
+              disabled={submitting}
+              className="w-full bg-brand-orange hover:brightness-110 disabled:bg-white/10 transition-all text-brand-dark font-display font-bold uppercase tracking-wide py-3 rounded-sm flex items-center justify-center gap-2"
+            >
+              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit & get my programme"}
+            </button>
+          )}
 
           {error && <p className="text-brand-orange text-sm font-body">{error}</p>}
+
+          <button
+            onClick={() => setStep(QUESTIONS.length)}
+            className="text-brand-light text-xs hover:text-white transition-colors font-body flex items-center gap-1"
+          >
+            <ArrowLeft className="w-3 h-3" /> Back to questions
+          </button>
         </div>
       )}
     </div>

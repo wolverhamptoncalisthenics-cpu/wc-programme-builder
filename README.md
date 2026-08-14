@@ -1,107 +1,96 @@
 # Wolverhampton Calisthenics — Programme Builder
 
-A full landing page with a personalised, AI-generated calisthenics
-programme builder at its core, styled in your brand colours and fonts.
+A landing page with accounts: people do the questionnaire, create an
+account, and either get a ready-made template programme instantly
+(free/common goals) or wait for you or Tim to build theirs by hand
+(paid/advanced goals).
 
-## Page structure (top to bottom)
+## What changed from the AI-generation version
 
-- `src/components/Nav.jsx` — sticky header with anchor links
-- `src/components/Hero.jsx` — headline and call to action
-- `src/components/HowItWorks.jsx` — the 4-step explainer
-- `src/components/Pricing.jsx` — free vs paid tier cards
-- `src/components/ProgrammeBuilder.jsx` — the quiz itself (goal, level,
-  days, equipment, injuries)
-- `src/components/ProgrammeResult.jsx` — the generated plan, weekly/
-  progression toggle, exercise videos
-- `src/components/ProgressTracker.jsx` — session checklist + milestone log
-- `src/components/Testimonials.jsx` — **placeholder quotes, replace before
-  going live**
-- `src/components/Team.jsx` — coach bios, **Tim's needs your input**
-- `src/components/FAQ.jsx` — expandable Q&A
-- `src/components/Footer.jsx` — links, update the placeholder ones
+Programmes are no longer written live by Claude. Instead:
 
-Shared data lives in `src/data/programme.js` — the goals list (free/paid,
-pricing) and the exercise video library both live here so they stay
-consistent across the whole app.
+- **Free goals** (general strength, flexibility, handstand basics,
+  muscle-up) → instantly assigned one of a handful of template
+  programmes you and Tim write once, stored in the database
+- **Paid goals** (press handstand, first pull-up) → after payment and
+  unlocking, their answers are saved and marked "pending" — you build
+  their programme by hand (a coach dashboard for this is the next
+  build stage, not included yet)
 
-## Editing content
+This also means there's no ongoing AI cost for the main flow. The
+`netlify/functions/generate.js` file is still there, unused for now —
+worth keeping around in case you want an AI-assisted first draft tool
+for yourselves later, but nothing currently calls it.
 
-Each section's text is a plain array or object near the top of its file
-— open the file, change the words, save. No need to touch the layout
-code below unless you want to change how something looks.
+## New pieces
 
-Look for `TODO` and `PLACEHOLDER` comments — those mark the two things
-worth doing before sharing this widely: real testimonials, and Tim's bio.
+- `src/lib/supabase.js` — connects to your Supabase project
+- `src/context/AuthContext.jsx` — tracks who's logged in across the app
+- `src/components/AuthForm.jsx` — sign up / log in, shown mid-quiz
+- `src/components/ProgrammeBuilder.jsx` — now saves answers to the
+  database instead of calling an AI
+- `supabase/setup.sql` — the one-time database setup script
 
-## One-time setup: get an Anthropic API key
+## One-time setup: Supabase (accounts + database)
 
-1. Go to https://console.anthropic.com and sign up (separate from your
-   normal Claude.ai login — this is the developer/billing side)
-2. Add a small amount of credit (a few pounds will last a very long time
-   at this usage level)
-3. Create an API key under **Settings > API Keys**
-4. Keep it somewhere safe — you'll paste it into Netlify in a moment
+1. Go to supabase.com, sign up, create a new project
+2. In the SQL Editor, paste in and run `supabase/setup.sql` — this
+   creates the accounts system, the submissions table, and seeds four
+   starter templates so there's something to test with
+3. Go to Project Settings > API, copy your **Project URL** and
+   **anon public** key
 
-## Deploying to Netlify (no coding required)
+## Deploying to Netlify
 
-1. Go to https://app.netlify.com and sign up (free)
-2. Easiest route: drag the whole `wc-app` folder onto
-   https://app.netlify.com/drop — this uploads and builds it automatically
-   - For easier future updates, push this folder to a GitHub repository
-     and connect it in Netlify under **Add new site > Import an existing
-     project** instead — it'll pick up `netlify.toml` automatically
-3. Go to **Site settings > Environment variables** and add:
-   - `ANTHROPIC_API_KEY` — your key from above
-4. Trigger a redeploy (automatic after adding an environment variable,
-   or use **Deploys > Trigger deploy**)
-5. Test the whole flow on the live `.netlify.app` link before sharing it
+1. Push this project to GitHub, then in Netlify: **Add new site >
+   Import an existing project** and connect the repo — it reads
+   `netlify.toml` automatically
+2. Under **Site settings > Environment variables**, add:
+   - `VITE_SUPABASE_URL` — your Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY` — your Supabase anon key
+   - (keep `ANTHROPIC_API_KEY` and the `UNLOCK_CODE_...` variables from
+     before if you still want the unlock-code flow for paid goals)
+3. Trigger a redeploy after adding the variables
 
-## Setting up paid goals (Tim's pull-up programme, your press handstand programme)
+## Writing your real template programmes
 
-Locked goals need an access code set as an environment variable in
-Netlify, same place as your API key:
+The four starter templates are placeholders, just enough to test with.
+In Supabase, go to **Table Editor > template_programmes** — it's a
+spreadsheet-style view. Edit the `summary`, `focus`, `quick_plan`, and
+`progression` columns directly. The `quick_plan` and `progression`
+columns hold structured data (JSON) — happy to help you edit these
+through the table editor's built-in JSON view if the format is fiddly,
+just ask.
 
-- `UNLOCK_CODE_FIRST_STRICT_PULL_UP` — the code for Tim's product, e.g. `PULLUP2026`
-- `UNLOCK_CODE_PRESS_HANDSTAND` — the code for your press handstand product, e.g. `PRESSHS2026`
+## What's still to build (next stages)
 
-Whoever buys gets the code from however you're currently taking payment
-(Stripe, bank transfer, whatever) and types it in to unlock that goal.
-Change a code any time in Netlify — takes effect within a minute or two,
-no redeploy needed.
+1. **Coach dashboard** — a private, login-gated page for you and Tim to
+   see new "pending_coach" submissions and write/save a manual
+   programme against them
+2. **Email notifications** — alert you both the moment someone submits
+3. **PWA support** — so the site installs like an app on people's phones
 
-To add a third paid goal later, add an entry to the `GOALS` array in
-`src/data/programme.js` with `tier: "paid"`, and add matching pricing
-info to the `TIERS` array in `src/components/Pricing.jsx`, then set a
-matching `UNLOCK_CODE_...` variable in Netlify.
-
-Note: unlocking happens per-device (saved in that browser), not
-per-person — if someone buys on their phone then opens the app on a
-laptop, they'd need to enter the code there too.
-
-## Adding a custom domain later
-
-Under **Site settings > Domain management > Add a custom domain**, follow
-Netlify's prompts. You'll update a DNS setting wherever your domain is
-registered (or register a new one directly through Netlify). SSL is
-automatic and free.
-
-## Adding exercise videos
-
-Open `src/data/programme.js`, find the `EXERCISE_LIBRARY` object, and
-fill in a video ID or URL next to the relevant exercise name:
-
-```js
-"Strict pull-ups": "dQw4w9WgXcQ",  // YouTube video ID
-"Ring dips": "https://yoursite.com/videos/ring-dips.mp4",  // direct link
-```
-
-Save, then redeploy.
-
-## Running it locally to test changes (optional)
+## Running it locally
 
 ```
 npm install
 npm run dev
 ```
 
-Needs Node.js installed on your computer.
+Create a `.env` file (copy `.env.example`) with your Supabase URL and
+key to test the full flow locally. Needs Node.js installed.
+
+## Adding exercise videos
+
+Open `src/data/programme.js`, find `EXERCISE_LIBRARY`, and fill in a
+video ID or URL next to the relevant exercise name:
+
+```js
+"Strict pull-ups": "dQw4w9WgXcQ",  // YouTube video ID
+"Ring dips": "https://yoursite.com/videos/ring-dips.mp4",  // direct link
+```
+
+## Adding a custom domain
+
+Under **Site settings > Domain management > Add a custom domain** in
+Netlify, follow the prompts.

@@ -9,7 +9,6 @@ const TIERS = [
       "General strength & mobility",
       "Flexibility & movement quality",
       "Handstand basics",
-      "Muscle-up progressions",
       "Video demos for every move",
       "Progress tracking",
     ],

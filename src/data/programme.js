@@ -15,7 +15,6 @@ export const GOALS = [
   { id: "general-strength", label: "General strength & mobility", tier: "free" },
   { id: "flexibility", label: "Flexibility & movement quality", tier: "free" },
   { id: "handstand-basics", label: "Handstand basics", tier: "free" },
-  { id: "muscle-up", label: "Muscle-up", tier: "free" },
   {
     id: "first-strict-pull-up",
     label: "First strict pull-up",
