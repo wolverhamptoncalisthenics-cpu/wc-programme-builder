@@ -1,5 +1,15 @@
 import logo from "../assets/logo-light-bg.svg";
 
+function InstagramIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
+      <rect x="2" y="2" width="20" height="20" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export default function Footer() {
   return (
     <footer className="w-full bg-brand-light/5 border-t border-white/10 px-4 py-12">
@@ -7,16 +17,13 @@ export default function Footer() {
         <div className="flex items-center gap-3">
           <img src={logo} alt="Wolverhampton Calisthenics" className="h-10" />
         </div>
-        <div className="flex flex-col md:flex-row gap-2 md:gap-8 text-sm font-body text-brand-light">
+        <div className="flex items-center gap-6 text-sm font-body text-brand-light">
           <a href="#app" className="hover:text-white transition-colors">
             Build a programme
           </a>
-          {/* Update these with your real links */}
-          <a href="#" className="hover:text-white transition-colors">
-            Instagram
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
-            Saturday classes at Firewalker Fitness
+          {/* Update this with your real Instagram link */}
+          <a href="#" aria-label="Instagram" className="hover:text-white transition-colors">
+            <InstagramIcon className="w-5 h-5" />
           </a>
         </div>
       </div>
@@ -26,3 +33,4 @@ export default function Footer() {
     </footer>
   );
 }
+

@@ -14,7 +14,6 @@ const QUESTIONS = [
       "Just starting out",
       "Comfortable with basics, building strength",
       "Training consistently, chasing skills",
-      "Advanced — refining specific weaknesses",
     ],
   },
   {

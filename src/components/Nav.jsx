@@ -1,16 +1,19 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogIn, LogOut } from "lucide-react";
 import logo from "../assets/logo-dark-bg.svg";
+import { useAuth } from "../context/AuthContext";
+import AuthForm from "./AuthForm";
 
 const LINKS = [
   { label: "How it works", href: "#how-it-works" },
-  { label: "Pricing", href: "#pricing" },
   { label: "Build my plan", href: "#app" },
   { label: "FAQ", href: "#faq" },
 ];
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const { user, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 bg-brand-dark/95 backdrop-blur border-b border-white/10">
@@ -29,6 +32,21 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
+          {user ? (
+            <button
+              onClick={signOut}
+              className="text-sm font-body text-brand-light hover:text-white transition-colors flex items-center gap-1.5"
+            >
+              <LogOut className="w-4 h-4" /> Log out
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowLogin(true)}
+              className="text-sm font-display font-bold uppercase tracking-wide text-brand-dark bg-brand-orange hover:brightness-110 transition-all px-4 py-1.5 rounded-sm flex items-center gap-1.5"
+            >
+              <LogIn className="w-4 h-4" /> Log in
+            </button>
+          )}
         </nav>
 
         <button
@@ -52,7 +70,48 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
+          {user ? (
+            <button
+              onClick={() => {
+                signOut();
+                setOpen(false);
+              }}
+              className="text-sm font-body text-brand-light hover:text-white transition-colors flex items-center gap-1.5"
+            >
+              <LogOut className="w-4 h-4" /> Log out
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                setShowLogin(true);
+                setOpen(false);
+              }}
+              className="text-sm font-display font-bold uppercase tracking-wide text-brand-orange flex items-center gap-1.5"
+            >
+              <LogIn className="w-4 h-4" /> Log in
+            </button>
+          )}
         </nav>
+      )}
+
+      {showLogin && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center px-4"
+          onClick={() => setShowLogin(false)}
+        >
+          <div
+            className="w-full max-w-sm bg-brand-dark border border-white/15 rounded-md p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <AuthForm onAuthed={() => setShowLogin(false)} />
+            <button
+              onClick={() => setShowLogin(false)}
+              className="w-full text-center text-brand-light hover:text-white text-xs font-body mt-4 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
     </header>
   );

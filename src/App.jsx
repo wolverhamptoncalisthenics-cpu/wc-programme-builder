@@ -150,17 +150,19 @@ function AppInner() {
         )}
       </section>
 
-      <section className="w-full px-4 py-20">
-        <div className="max-w-md mx-auto text-center mb-10">
-          <span className="font-display font-bold text-brand-orange text-xs tracking-widest uppercase">
-            Stay on track
-          </span>
-          <h2 className="font-display font-extrabold uppercase text-3xl leading-tight mt-2">
-            Your progress
-          </h2>
-        </div>
-        <ProgressTracker plan={submissionResult?.plan ? submissionResult.plan.quickPlan : null} />
-      </section>
+      {user && (
+        <section className="w-full px-4 py-20">
+          <div className="max-w-md mx-auto text-center mb-10">
+            <span className="font-display font-bold text-brand-orange text-xs tracking-widest uppercase">
+              Stay on track
+            </span>
+            <h2 className="font-display font-extrabold uppercase text-3xl leading-tight mt-2">
+              Your progress
+            </h2>
+          </div>
+          <ProgressTracker plan={submissionResult?.plan ? submissionResult.plan.quickPlan : null} />
+        </section>
+      )}
 
       <Testimonials />
       <Team />
