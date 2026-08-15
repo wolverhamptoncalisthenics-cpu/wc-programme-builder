@@ -333,7 +333,7 @@ export default function CoachDashboard({ onClose }) {
   const filtered = submissions.filter((s) => (filter === "all" ? true : s.status === filter));
 
   return (
-    <div className="fixed inset-0 z-[70] bg-brand-dark overflow-y-auto">
+    <div className="fixed inset-0 z-[70] bg-brand-dark overflow-y-auto text-white font-body">
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="font-display font-extrabold uppercase text-2xl">Coach dashboard</h1>
