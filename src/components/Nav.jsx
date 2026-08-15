@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Menu, X, LogIn, LogOut } from "lucide-react";
+import { Menu, X, LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import logo from "../assets/logo-dark-bg.svg";
 import { useAuth } from "../context/AuthContext";
 import AuthForm from "./AuthForm";
+import CoachDashboard from "./CoachDashboard";
 
 const LINKS = [
   { label: "How it works", href: "#how-it-works" },
@@ -13,7 +14,8 @@ const LINKS = [
 export default function Nav() {
   const [open, setOpen] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
-  const { user, signOut } = useAuth();
+  const [showDashboard, setShowDashboard] = useState(false);
+  const { user, isCoach, signOut } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 bg-brand-dark/95 backdrop-blur border-b border-white/10">
@@ -32,6 +34,14 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
+          {isCoach && (
+            <button
+              onClick={() => setShowDashboard(true)}
+              className="text-sm font-body text-brand-orange hover:text-white transition-colors flex items-center gap-1.5"
+            >
+              <LayoutDashboard className="w-4 h-4" /> Coach dashboard
+            </button>
+          )}
           {user ? (
             <button
               onClick={signOut}
@@ -70,6 +80,17 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
+          {isCoach && (
+            <button
+              onClick={() => {
+                setShowDashboard(true);
+                setOpen(false);
+              }}
+              className="text-sm font-body text-brand-orange hover:text-white transition-colors flex items-center gap-1.5"
+            >
+              <LayoutDashboard className="w-4 h-4" /> Coach dashboard
+            </button>
+          )}
           {user ? (
             <button
               onClick={() => {
@@ -100,19 +121,22 @@ export default function Nav() {
           onClick={() => setShowLogin(false)}
         >
           <div
-            className="w-full max-w-sm bg-brand-dark border border-white/15 rounded-md p-6 my-auto"
+            className="relative w-full max-w-sm bg-brand-dark border border-white/15 rounded-md p-6 my-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <AuthForm onAuthed={() => setShowLogin(false)} />
             <button
               onClick={() => setShowLogin(false)}
-              className="w-full text-center text-brand-light hover:text-white text-xs font-body mt-4 transition-colors"
+              aria-label="Close"
+              className="absolute top-4 right-4 text-brand-light hover:text-white transition-colors"
             >
-              Close
+              <X className="w-5 h-5" />
             </button>
+            <AuthForm onAuthed={() => setShowLogin(false)} plain />
           </div>
         </div>
       )}
+
+      {showDashboard && <CoachDashboard onClose={() => setShowDashboard(false)} />}
     </header>
   );
 }

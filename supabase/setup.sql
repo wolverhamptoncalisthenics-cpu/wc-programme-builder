@@ -79,6 +79,35 @@ create policy "Users can create their own submissions"
   on submissions for insert
   with check (auth.uid() = user_id);
 
+-- Marks specific accounts as coaches, so they can see everyone's
+-- submissions and build programmes. After you and Tim have both
+-- signed up on the live site, add your two rows here yourself in
+-- Table Editor > coaches (find your user id in Authentication > Users,
+-- copy it in) — that's the only manual step needed to grant access.
+create table coaches (
+  user_id uuid references auth.users on delete cascade primary key,
+  name text
+);
+
+alter table coaches enable row level security;
+
+create policy "Users can check their own coach status"
+  on coaches for select
+  using (auth.uid() = user_id);
+
+-- Lets coaches see and update everyone's submissions, not just their own.
+create policy "Coaches can view all submissions"
+  on submissions for select
+  using (exists (select 1 from coaches where user_id = auth.uid()));
+
+create policy "Coaches can update submissions"
+  on submissions for update
+  using (exists (select 1 from coaches where user_id = auth.uid()));
+
+create policy "Coaches can view all profiles"
+  on profiles for select
+  using (exists (select 1 from coaches where user_id = auth.uid()));
+
 -- Starter templates so the free goals have *something* to show while
 -- you write your real versions. Replace the quick_plan/progression
 -- content with your own programmes whenever you're ready — just

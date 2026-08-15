@@ -51,7 +51,31 @@ starter plan while you wait" option.
      want the unlock-code flow for paid goals)
 3. Trigger a redeploy after adding the variables
 
-## Assigning a programme manually (until the coach dashboard exists)
+## Setting up the coach dashboard
+
+1. Run `supabase/add-coaches.sql` in Supabase's SQL Editor (if you're
+   setting up fresh instead, `supabase/setup.sql` already includes this)
+2. On the live site, sign up for a normal account (both you and Tim,
+   using whichever emails you want to log in with as coaches)
+3. In Supabase, go to **Authentication > Users**, find your account,
+   and copy its **User UID**
+4. Go to **Table Editor > coaches**, click **Insert row**, paste that
+   UID into `user_id`, add your name in `name`, save. Repeat for Tim.
+5. Log out and back in on the site (or just refresh) — a **Coach
+   dashboard** button will now appear in the header for that account
+
+From the dashboard you can filter submissions by Pending/Ready/All,
+click "Build programme" on any pending one, and fill in a proper form
+— summary, a weekly plan with exercises picked from your video
+library, and a longer progression with phases and goals. Saving marks
+it "ready" and the person sees it next time they log in.
+
+## Assigning a programme manually (old method, no longer needed)
+
+Before the dashboard existed, this had to be done directly in
+Supabase's Table Editor by pasting raw JSON into the
+`manual_programme` column. The dashboard now does this for you — this
+section is just here in case you ever need to fix something by hand.
 
 1. In Supabase, go to **Table Editor > submissions**
 2. Find the row for the person you're building for (sorted by
@@ -80,16 +104,10 @@ starter plan while you wait" option.
 4. Change `status` from `pending_coach` to `ready`
 5. They'll see it next time they log in
 
-Happy to help build a proper in-app dashboard for this whenever you're
-ready — it'd remove the need to touch Supabase directly at all.
-
 ## What's still to build (next stages)
 
-1. **Coach dashboard** — a private, login-gated page for you and Tim to
-   see new "pending_coach" submissions and write/save a manual
-   programme against them, without needing Supabase's table editor
-2. **Email notifications** — alert you both the moment someone submits
-3. **PWA support** — so the site installs like an app on people's phones
+1. **Email notifications** — alert you both the moment someone submits
+2. **PWA support** — so the site installs like an app on people's phones
 
 ## Running it locally
 

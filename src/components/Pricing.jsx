@@ -16,7 +16,7 @@ const TIERS = [
   },
   {
     name: "First Pull-Up",
-    price: "£15",
+    price: "£49.99",
     description: "Tim's structured path from dead hang to your first strict pull-up.",
     features: [
       "Everything in Free",
@@ -28,7 +28,7 @@ const TIERS = [
   },
   {
     name: "Press Handstand",
-    price: "£15",
+    price: "£49.99",
     description: "Tom's programme for compression, strength, and control to press to handstand.",
     features: [
       "Everything in Free",

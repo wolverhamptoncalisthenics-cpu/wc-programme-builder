@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
-export default function AuthForm({ onAuthed }) {
+export default function AuthForm({ onAuthed, plain = false }) {
   const { signUp, signIn } = useAuth();
   const [mode, setMode] = useState("signup"); // "signup" | "login"
   const [email, setEmail] = useState("");
@@ -37,8 +37,8 @@ export default function AuthForm({ onAuthed }) {
   }
 
   return (
-    <div className="border border-white/15 rounded-sm p-5 space-y-4">
-      <div>
+    <div className={plain ? "space-y-4" : "border border-white/15 rounded-sm p-5 space-y-4"}>
+      <div className="pr-6">
         <h3 className="font-display font-bold text-lg">
           {mode === "signup" ? "Create your account" : "Log in"}
         </h3>
