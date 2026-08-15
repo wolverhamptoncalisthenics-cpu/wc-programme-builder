@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Menu, X, LogIn, LogOut, LayoutDashboard } from "lucide-react";
 import logo from "../assets/logo-dark-bg.svg";
 import { useAuth } from "../context/AuthContext";
@@ -115,28 +116,35 @@ export default function Nav() {
         </nav>
       )}
 
-      {showLogin && (
-        <div
-          className="fixed inset-0 z-[60] bg-black/70 flex items-start sm:items-center justify-center px-4 py-8 overflow-y-auto"
-          onClick={() => setShowLogin(false)}
-        >
+      {/* Rendered via portal straight into <body>, so it isn't trapped
+          inside this sticky header's positioning context — that trap
+          was why the popup was rendering as a tiny box under the nav
+          instead of centered over the whole page. */}
+      {showLogin &&
+        createPortal(
           <div
-            className="relative w-full max-w-sm bg-brand-dark border border-white/15 rounded-md p-6 my-auto"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[60] bg-black/70 flex items-start sm:items-center justify-center px-4 py-8 overflow-y-auto"
+            onClick={() => setShowLogin(false)}
           >
-            <button
-              onClick={() => setShowLogin(false)}
-              aria-label="Close"
-              className="absolute top-4 right-4 text-brand-light hover:text-white transition-colors"
+            <div
+              className="relative w-full max-w-sm bg-brand-dark border border-white/15 rounded-md p-6 my-auto"
+              onClick={(e) => e.stopPropagation()}
             >
-              <X className="w-5 h-5" />
-            </button>
-            <AuthForm onAuthed={() => setShowLogin(false)} plain />
-          </div>
-        </div>
-      )}
+              <button
+                onClick={() => setShowLogin(false)}
+                aria-label="Close"
+                className="absolute top-4 right-4 text-brand-light hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <AuthForm onAuthed={() => setShowLogin(false)} plain />
+            </div>
+          </div>,
+          document.body
+        )}
 
-      {showDashboard && <CoachDashboard onClose={() => setShowDashboard(false)} />}
+      {showDashboard &&
+        createPortal(<CoachDashboard onClose={() => setShowDashboard(false)} />, document.body)}
     </header>
   );
 }

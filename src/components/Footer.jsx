@@ -11,7 +11,7 @@ function InstagramIcon(props) {
 export default function Footer() {
   return (
     <footer className="w-full bg-brand-light/5 border-t border-white/10 px-4 py-6">
-      <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-body text-brand-light">
+      <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-body text-brand-light">
         <p className="text-xs text-brand-light/60">
           © {new Date().getFullYear()} Wolverhampton Calisthenics
         </p>
