@@ -6,6 +6,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isCoach, setIsCoach] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -20,6 +21,19 @@ export function AuthProvider({ children }) {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!user) {
+      setIsCoach(false);
+      return;
+    }
+    supabase
+      .from("coaches")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setIsCoach(Boolean(data)));
+  }, [user]);
+
   async function signUp(email, password) {
     return supabase.auth.signUp({ email, password });
   }
@@ -33,7 +47,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, isCoach, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
@@ -42,3 +56,4 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
+

@@ -7,16 +7,20 @@ const FAQS = [
     a: "No — one of the quiz questions asks what you've got access to, and your plan is built around that. If it's wall space only, you'll get a wall-space-only plan.",
   },
   {
+    q: "How do I get my programme?",
+    a: "After the quiz, you'll create an account. Tom or Tim then builds your programme by hand based on your answers — you'll see it appear in your account once it's ready.",
+  },
+  {
     q: "How does unlocking a paid programme work?",
-    a: "After paying (details on how to pay are outside this app for now), you'll get an access code. Enter it on the goal you've unlocked and it's yours from then on, on that device.",
+    a: "After paying (details on how to pay are outside this app for now), you'll get an access code. Enter it on the goal you've unlocked, then submit the quiz as normal and your coach will build it for you.",
   },
   {
     q: "Can I build more than one programme?",
-    a: "Yes — hit \"New plan\" any time to run the quiz again with a different goal or set of answers.",
+    a: "Yes — hit \"Submit a different goal instead\" any time to run the quiz again with a different goal or set of answers.",
   },
   {
     q: "Is my information stored anywhere?",
-    a: "Your answers and progress are saved locally on your own device, not on a server or account. If you clear your browser data or switch devices, you'll need to rebuild your plan.",
+    a: "Yes — creating an account means your answers and programme are saved to your account, so you can log in from any device and pick up where you left off.",
   },
 ];
 

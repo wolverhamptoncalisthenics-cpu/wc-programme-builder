@@ -1,5 +1,3 @@
-import logo from "../assets/logo-light-bg.svg";
-
 function InstagramIcon(props) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
@@ -12,25 +10,19 @@ function InstagramIcon(props) {
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-brand-light/5 border-t border-white/10 px-4 py-12">
-      <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-        <div className="flex items-center gap-3">
-          <img src={logo} alt="Wolverhampton Calisthenics" className="h-10" />
-        </div>
-        <div className="flex items-center gap-6 text-sm font-body text-brand-light">
-          <a href="#app" className="hover:text-white transition-colors">
-            Build a programme
-          </a>
-          {/* Update this with your real Instagram link */}
-          <a href="#" aria-label="Instagram" className="hover:text-white transition-colors">
-            <InstagramIcon className="w-5 h-5" />
-          </a>
-        </div>
+    <footer className="w-full bg-brand-light/5 border-t border-white/10 px-4 py-6">
+      <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-body text-brand-light">
+        <p className="text-xs text-brand-light/60">
+          © {new Date().getFullYear()} Wolverhampton Calisthenics
+        </p>
+        {/* Update this with your real Instagram link */}
+        <a href="#" aria-label="Instagram" className="hover:text-white transition-colors">
+          <InstagramIcon className="w-4 h-4" />
+        </a>
+        <a href="#app" className="hover:text-white transition-colors">
+          Build my plan
+        </a>
       </div>
-      <p className="text-center text-xs text-brand-light/60 font-body mt-8">
-        © {new Date().getFullYear()} Wolverhampton Calisthenics
-      </p>
     </footer>
   );
 }
-

@@ -130,24 +130,6 @@ export default function ProgrammeBuilder({ onSubmitted }) {
     setError(null);
 
     try {
-      let status = "pending_coach";
-      let assignedTemplateId = null;
-      let templateData = null;
-
-      if (answers.tier === "free") {
-        const { data: template } = await supabase
-          .from("template_programmes")
-          .select("*")
-          .eq("goal_id", answers.goalId)
-          .maybeSingle();
-
-        if (template) {
-          status = "assigned";
-          assignedTemplateId = template.id;
-          templateData = template;
-        }
-      }
-
       const { error: insertError } = await supabase.from("submissions").insert({
         user_id: user.id,
         goal_id: answers.goalId,
@@ -156,22 +138,15 @@ export default function ProgrammeBuilder({ onSubmitted }) {
         days: answers.days,
         equipment: answers.equipment,
         limitations: answers.limitations || null,
-        status,
-        assigned_template_id: assignedTemplateId,
+        status: "pending_coach",
+        assigned_template_id: null,
       });
 
       if (insertError) throw insertError;
 
       onSubmitted({
-        status,
-        plan: templateData
-          ? {
-              summary: templateData.summary,
-              focus: templateData.focus,
-              quickPlan: templateData.quick_plan,
-              progression: templateData.progression,
-            }
-          : null,
+        status: "pending_coach",
+        plan: null,
         goal: answers.goal,
       });
     } catch (e) {

@@ -1,37 +1,23 @@
 import { useState, useEffect } from "react";
-import { Loader2, Clock, LogOut } from "lucide-react";
 import Nav from "./components/Nav";
 import Hero from "./components/Hero";
 import HowItWorks from "./components/HowItWorks";
 import Pricing from "./components/Pricing";
 import ProgrammeBuilder from "./components/ProgrammeBuilder";
-import ProgrammeResult from "./components/ProgrammeResult";
-import ProgressTracker from "./components/ProgressTracker";
 import Testimonials from "./components/Testimonials";
 import Team from "./components/Team";
 import FAQ from "./components/FAQ";
 import Footer from "./components/Footer";
+import AccountPage from "./components/AccountPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { supabase } from "./lib/supabase";
 
-function PendingCoach({ goal }) {
-  return (
-    <div className="w-full max-w-md mx-auto bg-black/20 border border-white/10 rounded-md p-6 text-center space-y-3">
-      <Clock className="w-8 h-8 text-brand-orange mx-auto" />
-      <h3 className="font-display font-bold text-xl uppercase">Your coach is on it</h3>
-      <p className="text-brand-light text-sm font-body leading-relaxed">
-        <span className="text-white">{goal}</span> is a coach-built programme. Tom or Tim will put
-        yours together and it'll show up here once it's ready — no need to do anything else.
-      </p>
-    </div>
-  );
-}
-
 function AppInner() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading } = useAuth();
   const [submissionResult, setSubmissionResult] = useState(null); // { status, plan, goal }
   const [checkingExisting, setCheckingExisting] = useState(true);
   const [builderKey, setBuilderKey] = useState(0);
+  const [view, setView] = useState("site"); // "site" | "account"
 
   useEffect(() => {
     if (loading) return;
@@ -85,16 +71,31 @@ function AppInner() {
 
   function handleSubmitted(result) {
     setSubmissionResult(result);
+    setView("account"); // take them straight to their account to see the status
   }
 
   function handleRestart() {
     setSubmissionResult(null);
     setBuilderKey((k) => k + 1);
+    setView("site");
+  }
+
+  if (view === "account" && user) {
+    return (
+      <div className="min-h-screen w-full bg-brand-dark">
+        <Nav onGoHome={() => setView("site")} onOpenAccount={() => setView("account")} />
+        <AccountPage
+          submissionResult={submissionResult}
+          checkingExisting={checkingExisting}
+          onRestart={handleRestart}
+        />
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen w-full bg-brand-dark text-white font-body">
-      <Nav />
+      <Nav onGoHome={() => setView("site")} onOpenAccount={() => setView("account")} />
       <Hero />
 
       <div id="how-it-works">
@@ -113,56 +114,10 @@ function AppInner() {
           <h2 className="font-display font-extrabold uppercase text-3xl leading-tight mt-2">
             Let's get started
           </h2>
-          {user && (
-            <button
-              onClick={signOut}
-              className="mt-3 text-brand-light hover:text-white text-xs font-body flex items-center gap-1 mx-auto transition-colors"
-            >
-              <LogOut className="w-3 h-3" /> Log out ({user.email})
-            </button>
-          )}
         </div>
 
-        {checkingExisting ? (
-          <div className="flex justify-center py-10">
-            <Loader2 className="w-6 h-6 animate-spin text-brand-orange" />
-          </div>
-        ) : submissionResult ? (
-          submissionResult.plan ? (
-            <ProgrammeResult
-              result={submissionResult.plan}
-              goal={submissionResult.goal}
-              onRestart={handleRestart}
-            />
-          ) : (
-            <div className="space-y-4">
-              <PendingCoach goal={submissionResult.goal} />
-              <button
-                onClick={handleRestart}
-                className="block mx-auto text-brand-light hover:text-white text-xs font-body transition-colors"
-              >
-                Submit a different goal instead
-              </button>
-            </div>
-          )
-        ) : (
-          <ProgrammeBuilder key={builderKey} onSubmitted={handleSubmitted} />
-        )}
+        <ProgrammeBuilder key={builderKey} onSubmitted={handleSubmitted} />
       </section>
-
-      {user && (
-        <section className="w-full px-4 py-20">
-          <div className="max-w-md mx-auto text-center mb-10">
-            <span className="font-display font-bold text-brand-orange text-xs tracking-widest uppercase">
-              Stay on track
-            </span>
-            <h2 className="font-display font-extrabold uppercase text-3xl leading-tight mt-2">
-              Your progress
-            </h2>
-          </div>
-          <ProgressTracker plan={submissionResult?.plan ? submissionResult.plan.quickPlan : null} />
-        </section>
-      )}
 
       <Testimonials />
       <Team />

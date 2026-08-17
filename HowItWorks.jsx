@@ -8,8 +8,8 @@ const STEPS = [
   },
   {
     icon: Sparkles,
-    title: "Get your plan instantly",
-    body: "A simple weekly plan or a full 8–12 week progression — whichever fits how you like to train.",
+    title: "Your coach builds your plan",
+    body: "Tom or Tim puts your programme together by hand, matched to your goal, level, and what you've got access to.",
   },
   {
     icon: PlayCircle,
