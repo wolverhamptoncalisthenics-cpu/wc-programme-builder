@@ -107,7 +107,11 @@ section is just here in case you ever need to fix something by hand.
 ## Setting up email notifications
 
 You and Tim get emailed at the same shared inbox the moment someone
-submits the questionnaire.
+submits the questionnaire. The app calls the notification function
+directly right after saving a submission — no Supabase webhook needed
+(we tried that route first, but it hit an infrastructure quirk on some
+Supabase projects around a missing internal schema, so this simpler
+approach sidesteps it entirely).
 
 **1. Create a Resend account**
 
@@ -120,35 +124,18 @@ Same place as before (Site settings > Environment variables):
 
 - `RESEND_API_KEY` — the key from Resend
 - `COACH_NOTIFY_EMAIL` — the shared inbox you and Tim want notified at
-- `SUPABASE_URL` — same value as `VITE_SUPABASE_URL`, just without the
-  `VITE_` prefix (the notification function needs it under a different
-  name since it runs on the server, not in the browser)
-- `SUPABASE_SERVICE_ROLE_KEY` — from Supabase, **Project Settings >
-  API > service_role key**. This one's powerful (bypasses all your
-  security rules) — never put it anywhere in the app's own code or
-  the `VITE_...` variables, only here as a private Netlify variable
-- `WEBHOOK_SECRET` (optional but recommended) — make up any random
-  string, e.g. a long password. This stops random requests from the
-  internet from being able to trigger fake emails
 
-Trigger a redeploy after adding these.
+Trigger a redeploy after adding these, then submit a test
+questionnaire on the live site and check the shared inbox — it should
+land within a few seconds.
 
-**3. Point Supabase at the notification function**
-
-In Supabase: **Database > Webhooks > Create a new webhook**
-
-- Name: anything, e.g. `notify-coaches`
-- Table: `submissions`
-- Events: tick **Insert** only
-- Type: **HTTP Request**
-- Method: `POST`
-- URL: `https://your-site-name.netlify.app/.netlify/functions/notify-coach`
-  (swap in your actual Netlify URL)
-- If you set `WEBHOOK_SECRET` above, add an HTTP header:
-  key `x-webhook-secret`, value the same random string you used
-
-Save it. Submit a test questionnaire on the live site and check the
-shared inbox — it should land within a few seconds.
+**A note on reliability:** because this fires from the person's own
+browser right after they submit, it needs their connection to still be
+open for that brief moment. In practice this is essentially always the
+case, but if you ever suspect an email didn't send, the submission
+itself will still be sitting safely in the coach dashboard regardless
+— the email is just a convenience nudge, not the only way you'll find
+out about it.
 
 **A note on the "from" address:** right now emails send from Resend's
 own shared testing address, which works immediately but can look less

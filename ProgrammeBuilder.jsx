@@ -144,6 +144,24 @@ export default function ProgrammeBuilder({ onSubmitted }) {
 
       if (insertError) throw insertError;
 
+      // Fire-and-forget: don't block or fail the submission if the
+      // email fails to send for some reason, that's a lesser concern
+      // than the submission itself failing to save.
+      fetch(import.meta.env.VITE_NOTIFY_URL || "/api/notify-coach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          submitterEmail: user.email,
+          goalLabel: answers.goal,
+          level: answers.level,
+          days: answers.days,
+          equipment: answers.equipment,
+          limitations: answers.limitations || null,
+        }),
+      }).catch(() => {
+        // Silently ignore — the submission itself already succeeded.
+      });
+
       onSubmitted({
         status: "pending_coach",
         plan: null,
