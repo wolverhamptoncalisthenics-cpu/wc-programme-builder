@@ -314,12 +314,29 @@ export default function CoachDashboard({ onClose }) {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
+  const [debugInfo, setDebugInfo] = useState(null);
   const [filter, setFilter] = useState("pending_coach");
   const [editingId, setEditingId] = useState(null);
 
   async function load() {
     setLoading(true);
     setLoadError(null);
+
+    // Refresh first, matching the fix applied elsewhere — cheap
+    // insurance against the same session-timing issue showing up here.
+    await supabase.auth.refreshSession();
+
+    const { data: sessionData } = await supabase.auth.getUser();
+    const { data: coachRow } = await supabase
+      .from("coaches")
+      .select("user_id, name")
+      .eq("user_id", sessionData?.user?.id)
+      .maybeSingle();
+    setDebugInfo({
+      sessionUserId: sessionData?.user?.id || "none",
+      sessionEmail: sessionData?.user?.email || "none",
+      coachRowFound: Boolean(coachRow),
+    });
 
     const { data, error } = await supabase
       .from("submissions")
@@ -385,6 +402,13 @@ export default function CoachDashboard({ onClose }) {
             </button>
           ))}
         </div>
+
+        {debugInfo && (
+          <div className="text-[10px] font-body text-brand-light/60 mb-4 border border-white/10 rounded-sm p-2 space-y-0.5">
+            <p>Logged in as: {debugInfo.sessionEmail} ({debugInfo.sessionUserId})</p>
+            <p>Coach row found for this ID: {debugInfo.coachRowFound ? "yes" : "NO — this is the problem"}</p>
+          </div>
+        )}
 
         {loadError && (
           <p className="text-brand-orange text-sm font-body mb-4 border border-brand-orange/40 bg-brand-orange/5 rounded-sm p-3">
