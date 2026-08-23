@@ -125,22 +125,35 @@ export default function ProgrammeBuilder({ onSubmitted }) {
     return Boolean(answers[current.key]);
   }
 
+  async function insertSubmission() {
+    return supabase.from("submissions").insert({
+      user_id: user.id,
+      goal_id: answers.goalId,
+      goal_label: answers.goal,
+      level: answers.level,
+      days: answers.days,
+      equipment: answers.equipment,
+      limitations: answers.limitations || null,
+      status: "pending_coach",
+      assigned_template_id: null,
+    });
+  }
+
   async function submitQuestionnaire() {
     setSubmitting(true);
     setError(null);
 
     try {
-      const { error: insertError } = await supabase.from("submissions").insert({
-        user_id: user.id,
-        goal_id: answers.goalId,
-        goal_label: answers.goal,
-        level: answers.level,
-        days: answers.days,
-        equipment: answers.equipment,
-        limitations: answers.limitations || null,
-        status: "pending_coach",
-        assigned_template_id: null,
-      });
+      let { error: insertError } = await insertSubmission();
+
+      if (insertError) {
+        // The same session-timing hiccup that affected the account
+        // page can occasionally hit this request too, right after a
+        // fresh login. Refresh the session and try once more before
+        // giving up, so people don't have to manually hit submit twice.
+        await supabase.auth.refreshSession();
+        ({ error: insertError } = await insertSubmission());
+      }
 
       if (insertError) throw insertError;
 

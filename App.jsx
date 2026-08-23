@@ -29,7 +29,7 @@ function AppInner() {
     let cancelled = false;
     async function loadLatest() {
       setCheckingExisting(true);
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("submissions")
         .select("*, template_programmes(*)")
         .eq("user_id", user.id)
@@ -39,30 +39,58 @@ function AppInner() {
 
       if (cancelled) return;
 
-      if (data) {
-        if (data.status === "assigned" && data.template_programmes) {
-          setSubmissionResult({
-            status: "assigned",
-            goal: data.goal_label,
-            plan: {
-              summary: data.template_programmes.summary,
-              focus: data.template_programmes.focus,
-              quickPlan: data.template_programmes.quick_plan,
-              progression: data.template_programmes.progression,
-            },
-          });
-        } else if (data.status === "ready" && data.manual_programme) {
-          setSubmissionResult({
-            status: "ready",
-            goal: data.goal_label,
-            plan: data.manual_programme,
-          });
-        } else {
-          setSubmissionResult({ status: "pending_coach", goal: data.goal_label, plan: null });
+      if (error) {
+        // A 401 here usually means the session token wasn't valid yet
+        // at the moment of the request (can happen right after signup
+        // or email confirmation). Refreshing the session and retrying
+        // once is a reasonable, low-risk recovery rather than just
+        // leaving the person on a stuck loading state.
+        const { data: refreshed } = await supabase.auth.refreshSession();
+        if (refreshed?.session) {
+          const retry = await supabase
+            .from("submissions")
+            .select("*, template_programmes(*)")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (!cancelled && retry.data) {
+            applyResult(retry.data);
+          }
         }
+        setCheckingExisting(false);
+        return;
+      }
+
+      if (data) {
+        applyResult(data);
       }
       setCheckingExisting(false);
     }
+
+    function applyResult(data) {
+      if (data.status === "assigned" && data.template_programmes) {
+        setSubmissionResult({
+          status: "assigned",
+          goal: data.goal_label,
+          plan: {
+            summary: data.template_programmes.summary,
+            focus: data.template_programmes.focus,
+            quickPlan: data.template_programmes.quick_plan,
+            progression: data.template_programmes.progression,
+          },
+        });
+      } else if (data.status === "ready" && data.manual_programme) {
+        setSubmissionResult({
+          status: "ready",
+          goal: data.goal_label,
+          plan: data.manual_programme,
+        });
+      } else {
+        setSubmissionResult({ status: "pending_coach", goal: data.goal_label, plan: null });
+      }
+    }
+
     loadLatest();
     return () => {
       cancelled = true;

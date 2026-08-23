@@ -313,16 +313,42 @@ function SubmissionEditor({ submission, onSaved, onCancel }) {
 export default function CoachDashboard({ onClose }) {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [filter, setFilter] = useState("pending_coach");
   const [editingId, setEditingId] = useState(null);
 
   async function load() {
     setLoading(true);
-    const { data } = await supabase
+    setLoadError(null);
+
+    const { data, error } = await supabase
       .from("submissions")
-      .select("*, profiles(email)")
+      .select("*")
       .order("created_at", { ascending: false });
-    setSubmissions(data || []);
+
+    if (error) {
+      setLoadError(error.message);
+      setSubmissions([]);
+      setLoading(false);
+      return;
+    }
+
+    // Fetched separately rather than embedded in one query — embedding
+    // relies on a direct foreign key between the two tables, which
+    // isn't reliably set up here (submissions links to auth.users,
+    // profiles is a separate table keyed the same way but not
+    // guaranteed to be recognised as linked for embedding purposes).
+    const userIds = [...new Set((data || []).map((s) => s.user_id))];
+    let emailsById = {};
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, email")
+        .in("id", userIds);
+      emailsById = Object.fromEntries((profiles || []).map((p) => [p.id, p.email]));
+    }
+
+    setSubmissions((data || []).map((s) => ({ ...s, submitterEmail: emailsById[s.user_id] })));
     setLoading(false);
   }
 
@@ -360,6 +386,12 @@ export default function CoachDashboard({ onClose }) {
           ))}
         </div>
 
+        {loadError && (
+          <p className="text-brand-orange text-sm font-body mb-4 border border-brand-orange/40 bg-brand-orange/5 rounded-sm p-3">
+            Couldn't load submissions: {loadError}
+          </p>
+        )}
+
         {loading ? (
           <div className="flex justify-center py-10">
             <Loader2 className="w-6 h-6 animate-spin text-brand-orange" />
@@ -372,7 +404,7 @@ export default function CoachDashboard({ onClose }) {
               <div key={s.id} className="border border-white/15 rounded-sm p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm text-white font-body">{s.profiles?.email || "Unknown"}</p>
+                    <p className="text-sm text-white font-body">{s.submitterEmail || "Unknown"}</p>
                     <p className="text-xs text-brand-light font-body mt-0.5">
                       {s.goal_label} • submitted {new Date(s.created_at).toLocaleDateString("en-GB")}
                     </p>
