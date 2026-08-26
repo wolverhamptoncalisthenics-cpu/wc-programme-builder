@@ -5,8 +5,12 @@ import { EXERCISE_LIBRARY } from "../data/programme";
 
 const EXERCISE_NAMES = Object.keys(EXERCISE_LIBRARY);
 
+function emptyExercise() {
+  return { name: EXERCISE_NAMES[0], prescription: "", videoUrl: "", notes: "" };
+}
+
 function emptyDay() {
-  return { day: "", focus: "", exercises: [{ name: EXERCISE_NAMES[0], prescription: "" }] };
+  return { day: "", focus: "", exercises: [emptyExercise()] };
 }
 
 function emptyPhase() {
@@ -14,7 +18,7 @@ function emptyPhase() {
     phase: "",
     focus: "",
     goals: [""],
-    keyExercises: [{ name: EXERCISE_NAMES[0], prescription: "" }],
+    keyExercises: [emptyExercise()],
   };
 }
 
@@ -32,32 +36,46 @@ function ExerciseFields({ list, onChange }) {
     onChange(list.filter((_, idx) => idx !== i));
   }
   function add() {
-    onChange([...list, { name: EXERCISE_NAMES[0], prescription: "" }]);
+    onChange([...list, emptyExercise()]);
   }
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {list.map((ex, i) => (
-        <div key={i} className="flex gap-2">
-          <select
-            value={ex.name}
-            onChange={(e) => update(i, "name", e.target.value)}
-            className="flex-1 bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
-          >
-            {EXERCISE_NAMES.map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
+        <div key={i} className="border border-white/10 rounded-sm p-2 space-y-1.5">
+          <div className="flex gap-2">
+            <select
+              value={ex.name}
+              onChange={(e) => update(i, "name", e.target.value)}
+              className="flex-1 bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
+            >
+              {EXERCISE_NAMES.map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+            <input
+              value={ex.prescription}
+              onChange={(e) => update(i, "prescription", e.target.value)}
+              placeholder="3x8"
+              className="w-20 bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
+            />
+            <button onClick={() => remove(i)} className="text-brand-light hover:text-brand-orange shrink-0">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
           <input
-            value={ex.prescription}
-            onChange={(e) => update(i, "prescription", e.target.value)}
-            placeholder="3x8"
-            className="w-20 bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
+            value={ex.videoUrl || ""}
+            onChange={(e) => update(i, "videoUrl", e.target.value)}
+            placeholder="YouTube link (optional)"
+            className="w-full bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
           />
-          <button onClick={() => remove(i)} className="text-brand-light hover:text-brand-orange shrink-0">
-            <X className="w-4 h-4" />
-          </button>
+          <input
+            value={ex.notes || ""}
+            onChange={(e) => update(i, "notes", e.target.value)}
+            placeholder="Notes for this exercise (optional)"
+            className="w-full bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
+          />
         </div>
       ))}
       <button

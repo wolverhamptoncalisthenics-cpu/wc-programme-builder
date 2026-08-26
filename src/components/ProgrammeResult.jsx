@@ -59,6 +59,8 @@ export default function ProgrammeResult({ result, goal, onRestart }) {
                       key={key}
                       name={ex.name}
                       prescription={ex.prescription}
+                      videoUrl={ex.videoUrl}
+                      notes={ex.notes}
                       videoKey={key}
                       expanded={expandedVideo === key}
                       onToggle={toggle}
@@ -105,6 +107,8 @@ export default function ProgrammeResult({ result, goal, onRestart }) {
                           key={key}
                           name={ex.name}
                           prescription={ex.prescription}
+                          videoUrl={ex.videoUrl}
+                          notes={ex.notes}
                           videoKey={key}
                           expanded={expandedVideo === key}
                           onToggle={toggle}

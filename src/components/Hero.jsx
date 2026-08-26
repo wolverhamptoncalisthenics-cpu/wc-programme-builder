@@ -8,7 +8,7 @@ export default function Hero() {
 
   return (
     <section className="min-h-[90vh] w-full flex flex-col items-center justify-center px-4 py-16 text-center">
-      <img src={logo} alt="Wolverhampton Calisthenics" className="h-20 md:h-28 mb-10" />
+      <img src={logo} alt="Wolverhampton Calisthenics" className="h-28 md:h-36 mb-10" />
       <h1 className="font-display font-extrabold uppercase text-4xl md:text-6xl leading-[0.95] tracking-tight max-w-2xl">
         Your programme, <span className="text-brand-orange">built for you</span>
       </h1>
