@@ -424,7 +424,7 @@ export default function CoachDashboard({ onClose }) {
         {debugInfo && (
           <div className="text-[10px] font-body text-brand-light/60 mb-4 border border-white/10 rounded-sm p-2 space-y-0.5">
             <p>Logged in as: {debugInfo.sessionEmail} ({debugInfo.sessionUserId})</p>
-            <p>Coach row found for this ID: {debugInfo.coachRowFound ? "yes" : "NO — this is the problem"}</p>
+            <p>Coach row found for this ID: {debugInfo.coachRowFound ? "yes" : "NO, this is the problem"}</p>
           </div>
         )}
 

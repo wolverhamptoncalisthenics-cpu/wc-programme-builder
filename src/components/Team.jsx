@@ -20,7 +20,7 @@ const TEAM = [
     name: "Tim",
     role: "Coach",
     photo: null,
-    bio: "Co-runs Wolverhampton Calisthenics alongside Tom, alternating teaching weeks. [Tim — add a couple of lines here about your background and what you focus on coaching.]",
+    bio: "Co-runs Wolverhampton Calisthenics alongside Tom, alternating teaching weeks. [Tim, add a couple of lines here about your background and what you focus on coaching.]",
   },
 ];
 

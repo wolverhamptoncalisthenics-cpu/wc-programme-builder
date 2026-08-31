@@ -114,7 +114,7 @@ export default function ProgressTracker({ plan }) {
           <Trophy className="w-5 h-5 text-brand-orange" /> Milestones
         </h3>
         <p className="text-brand-light text-xs font-body mb-4">
-          Log the moments that matter — first wall hold, first strict rep, whatever's next for you.
+          Log the moments that matter: first wall hold, first strict rep, whatever's next for you.
         </p>
         <div className="flex gap-2 mb-4">
           <input

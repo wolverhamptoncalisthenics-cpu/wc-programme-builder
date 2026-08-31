@@ -9,7 +9,7 @@ function PendingCoach({ goal }) {
       <h3 className="font-display font-bold text-xl uppercase">Your coach is on it</h3>
       <p className="text-brand-light text-sm font-body leading-relaxed">
         <span className="text-white">{goal}</span> is a coach-built programme. Tom or Tim will put
-        yours together and it'll show up here once it's ready — no need to do anything else.
+        yours together and it'll show up here once it's ready. No need to do anything else.
       </p>
     </div>
   );

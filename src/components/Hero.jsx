@@ -14,7 +14,7 @@ export default function Hero() {
       </h1>
       <p className="text-brand-light font-body text-base md:text-lg mt-6 max-w-md leading-relaxed">
         Answer a few questions. Get a plan matched to your goal, your level, and what you've
-        actually got access to — free, in under a minute.
+        actually got access to. Free, in under a minute.
       </p>
       <button
         onClick={scrollToApp}

@@ -4,11 +4,11 @@ import { ChevronDown } from "lucide-react";
 const FAQS = [
   {
     q: "Do I need any equipment?",
-    a: "No — one of the quiz questions asks what you've got access to, and your plan is built around that. If it's wall space only, you'll get a wall-space-only plan.",
+    a: "No, one of the quiz questions asks what you've got access to, and your plan is built around that. If it's wall space only, you'll get a wall-space-only plan.",
   },
   {
     q: "How do I get my programme?",
-    a: "After the quiz, you'll create an account. Tom or Tim then builds your programme by hand based on your answers — you'll see it appear in your account once it's ready.",
+    a: "After the quiz, you'll create an account. Tom or Tim then builds your programme by hand based on your answers, and you'll see it appear in your account once it's ready.",
   },
   {
     q: "How does unlocking a paid programme work?",
@@ -16,11 +16,11 @@ const FAQS = [
   },
   {
     q: "Can I build more than one programme?",
-    a: "Yes — hit \"Submit a different goal instead\" any time to run the quiz again with a different goal or set of answers.",
+    a: "Yes, hit \"Submit a different goal instead\" any time to run the quiz again with a different goal or set of answers.",
   },
   {
     q: "Is my information stored anywhere?",
-    a: "Yes — creating an account means your answers and programme are saved to your account, so you can log in from any device and pick up where you left off.",
+    a: "Yes, creating an account means your answers and programme are saved to your account, so you can log in from any device and pick up where you left off.",
   },
 ];
 

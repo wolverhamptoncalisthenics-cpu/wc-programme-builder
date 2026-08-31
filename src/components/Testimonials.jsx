@@ -1,20 +1,20 @@
-// PLACEHOLDER CONTENT — swap these for real quotes from your own members
+// PLACEHOLDER CONTENT. Swap these for real quotes from your own members
 // before this goes live. Three is a good number to start with; add more
 // as you collect them.
 const TESTIMONIALS = [
   {
     quote:
-      "Placeholder — swap in a real quote here about how the programme fit around their schedule or goal.",
+      "Placeholder: swap in a real quote here about how the programme fit around their schedule or goal.",
     name: "Member name",
   },
   {
     quote:
-      "Placeholder — swap in a real quote here about progress they made or how the videos helped.",
+      "Placeholder: swap in a real quote here about progress they made or how the videos helped.",
     name: "Member name",
   },
   {
     quote:
-      "Placeholder — swap in a real quote here about the Saturday classes or the community itself.",
+      "Placeholder: swap in a real quote here about the Saturday classes or the community itself.",
     name: "Member name",
   },
 ];

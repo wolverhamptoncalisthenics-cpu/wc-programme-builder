@@ -350,7 +350,7 @@ export default function ProgrammeBuilder({ onSubmitted }) {
             <textarea
               value={answers.limitations || ""}
               onChange={(e) => setAnswers((a) => ({ ...a, limitations: e.target.value }))}
-              placeholder="e.g. dodgy wrist on straight-arm work — leave blank if none"
+              placeholder="e.g. dodgy wrist on straight-arm work, leave blank if none"
               className="w-full bg-white/5 border border-white/15 focus:border-brand-orange outline-none rounded-sm px-4 py-3 text-sm text-white font-body resize-none h-24"
             />
           )}

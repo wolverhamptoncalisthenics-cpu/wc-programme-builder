@@ -4,6 +4,10 @@
 // and product name, and need an access code to unlock (checked
 // server-side — see netlify/functions/verify-code.js).
 //
+// Note: the `id` values below are internal keys only (used to match
+// database rows and environment variable names) — they're never shown
+// to users.
+//
 // To change a price, edit `price` below. To change or add codes,
 // set environment variables in Netlify named:
 //   UNLOCK_CODE_FIRST_STRICT_PULL_UP
@@ -35,8 +39,9 @@ export const GOALS = [
 
 // ─────────────────────────────────────────────────────────────
 // EXERCISE VIDEO LIBRARY
-// Add your own demo videos here as you record them.
-// YouTube: just the video ID. Direct file: full URL starting "http".
+// This list is used only to populate the exercise-name dropdown in
+// the coach dashboard — actual video links and notes are now entered
+// per exercise when a programme is built, not stored here.
 // ─────────────────────────────────────────────────────────────
 export const EXERCISE_LIBRARY = {
   "Dead hang": "",
@@ -79,10 +84,3 @@ export const EXERCISE_LIBRARY = {
   "Skin the cat": "",
   "Active hang": "",
 };
-
-export function getVideoSource(name) {
-  const entry = EXERCISE_LIBRARY[name];
-  if (!entry) return null;
-  if (entry.startsWith("http")) return { type: "direct", src: entry };
-  return { type: "youtube", src: `https://www.youtube-nocookie.com/embed/${entry}` };
-}
