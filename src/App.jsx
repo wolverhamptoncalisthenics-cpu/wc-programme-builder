@@ -126,7 +126,7 @@ function AppInner() {
     return (
       <div className="min-h-screen w-full bg-brand-dark">
         <Nav onGoHome={() => setView("site")} onOpenAccount={() => setView("account")} />
-        <ContactPage onGoHome={() => setView("site")} />
+        <ContactPage />
       </div>
     );
   }
