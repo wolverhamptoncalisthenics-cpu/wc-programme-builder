@@ -8,7 +8,7 @@ function InstagramIcon(props) {
   );
 }
 
-export default function Footer({ onOpenContact }) {
+export default function Footer({ onOpenContact, onOpenPrivacy }) {
   return (
     <footer className="w-full bg-brand-light/5 border-t border-white/10 px-4 py-6">
       <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-body text-brand-light">
@@ -29,6 +29,9 @@ export default function Footer({ onOpenContact }) {
         </a>
         <button onClick={onOpenContact} className="hover:text-white transition-colors">
           Contact
+        </button>
+        <button onClick={onOpenPrivacy} className="hover:text-white transition-colors">
+          Privacy Policy
         </button>
       </div>
     </footer>

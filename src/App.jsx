@@ -10,11 +10,13 @@ import FAQ from "./components/FAQ";
 import Footer from "./components/Footer";
 import AccountPage from "./components/AccountPage";
 import ContactPage from "./components/ContactPage";
+import PrivacyPolicyPage from "./components/PrivacyPolicyPage";
+import SetNewPasswordPage from "./components/SetNewPasswordPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { supabase } from "./lib/supabase";
 
 function AppInner() {
-  const { user, loading } = useAuth();
+  const { user, loading, passwordRecovery } = useAuth();
   const [submissionResult, setSubmissionResult] = useState(null); // { status, plan, goal }
   const [checkingExisting, setCheckingExisting] = useState(true);
   const [builderKey, setBuilderKey] = useState(0);
@@ -109,6 +111,10 @@ function AppInner() {
     setView("site");
   }
 
+  if (passwordRecovery) {
+    return <SetNewPasswordPage />;
+  }
+
   if (view === "account" && user) {
     return (
       <div className="min-h-screen w-full bg-brand-dark">
@@ -127,6 +133,15 @@ function AppInner() {
       <div className="min-h-screen w-full bg-brand-dark">
         <Nav onGoHome={() => setView("site")} onOpenAccount={() => setView("account")} />
         <ContactPage />
+      </div>
+    );
+  }
+
+  if (view === "privacy") {
+    return (
+      <div className="min-h-screen w-full bg-brand-dark">
+        <Nav onGoHome={() => setView("site")} onOpenAccount={() => setView("account")} />
+        <PrivacyPolicyPage />
       </div>
     );
   }
@@ -164,7 +179,7 @@ function AppInner() {
         <FAQ />
       </div>
 
-      <Footer onOpenContact={() => setView("contact")} />
+      <Footer onOpenContact={() => setView("contact")} onOpenPrivacy={() => setView("privacy")} />
     </div>
   );
 }
