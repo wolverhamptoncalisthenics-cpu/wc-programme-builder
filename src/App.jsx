@@ -9,6 +9,7 @@ import Team from "./components/Team";
 import FAQ from "./components/FAQ";
 import Footer from "./components/Footer";
 import AccountPage from "./components/AccountPage";
+import ContactPage from "./components/ContactPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { supabase } from "./lib/supabase";
 
@@ -121,6 +122,15 @@ function AppInner() {
     );
   }
 
+  if (view === "contact") {
+    return (
+      <div className="min-h-screen w-full bg-brand-dark">
+        <Nav onGoHome={() => setView("site")} onOpenAccount={() => setView("account")} />
+        <ContactPage onGoHome={() => setView("site")} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen w-full bg-brand-dark text-white font-body">
       <Nav onGoHome={() => setView("site")} onOpenAccount={() => setView("account")} />
@@ -154,7 +164,7 @@ function AppInner() {
         <FAQ />
       </div>
 
-      <Footer />
+      <Footer onOpenContact={() => setView("contact")} />
     </div>
   );
 }

@@ -1,21 +1,17 @@
-// PLACEHOLDER CONTENT. Swap these for real quotes from your own members
-// before this goes live. Three is a good number to start with; add more
-// as you collect them.
 const TESTIMONIALS = [
   {
     quote:
-      "Placeholder: swap in a real quote here about how the programme fit around their schedule or goal.",
-    name: "Member name",
+      "I've got a much better understanding of my form, and it's great seeing other athletes learning different skills and helping each other out with feedback.",
+    name: "Anthony Golding",
+  },
+  {
+    quote: "I've learnt new skills and sharpened the ones I already had.",
+    name: "Samantha Box",
   },
   {
     quote:
-      "Placeholder: swap in a real quote here about progress they made or how the videos helped.",
-    name: "Member name",
-  },
-  {
-    quote:
-      "Placeholder: swap in a real quote here about the Saturday classes or the community itself.",
-    name: "Member name",
+      "It's shown me exactly which weak points I need to work on to optimise my performance, keep progressing, and stay injury free.",
+    name: "Ryan Liecheukyin",
   },
 ];
 
@@ -26,7 +22,7 @@ export default function Testimonials() {
         From the community
       </span>
       <h2 className="font-display font-extrabold uppercase text-3xl md:text-4xl leading-tight mt-2 mb-12">
-        What members say
+        What the community says
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {TESTIMONIALS.map((t, i) => (

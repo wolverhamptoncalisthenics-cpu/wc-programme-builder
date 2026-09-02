@@ -8,20 +8,28 @@ function InstagramIcon(props) {
   );
 }
 
-export default function Footer() {
+export default function Footer({ onOpenContact }) {
   return (
     <footer className="w-full bg-brand-light/5 border-t border-white/10 px-4 py-6">
       <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-body text-brand-light">
         <p className="text-xs text-brand-light/60">
           © {new Date().getFullYear()} Wolverhampton Calisthenics
         </p>
-        {/* Update this with your real Instagram link */}
-        <a href="#" aria-label="Instagram" className="hover:text-white transition-colors">
-          <InstagramIcon className="w-4 h-4" />
+        <a
+          href="https://www.instagram.com/wolverhamptoncalisthenics"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Instagram"
+          className="hover:text-white transition-colors"
+        >
+          <InstagramIcon className="w-6 h-6" />
         </a>
         <a href="#app" className="hover:text-white transition-colors">
           Build my plan
         </a>
+        <button onClick={onOpenContact} className="hover:text-white transition-colors">
+          Contact
+        </button>
       </div>
     </footer>
   );
