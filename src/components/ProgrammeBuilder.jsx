@@ -249,7 +249,8 @@ export default function ProgrammeBuilder({ onSubmitted }) {
                     <div className="mt-2 p-4 border border-brand-orange/40 bg-brand-orange/5 rounded-sm space-y-3">
                       <p className="text-sm text-brand-light font-body">
                         This goal unlocks with <span className="text-white">{goal.product}</span> (
-                        {goal.price}). Already got a code? Enter it below.
+                        {goal.price}, covers 12 weeks of programming). Already got a code? Enter it
+                        below.
                       </p>
                       <div className="flex gap-2">
                         <input

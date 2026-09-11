@@ -49,7 +49,7 @@ function ExerciseFields({ list, onChange }) {
               className="flex-1 bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
             >
               {EXERCISE_NAMES.map((n) => (
-                <option key={n} value={n}>
+                <option key={n} value={n} style={{ backgroundColor: "#42403F", color: "#ffffff" }}>
                   {n}
                 </option>
               ))}
@@ -236,6 +236,7 @@ function SubmissionEditor({ submission, onSaved, onCancel }) {
   async function save() {
     setSaving(true);
     setError(null);
+    const wasAlreadyReady = submission.status === "ready";
     const manual_programme = {
       summary: form.summary,
       focus: form.focus,
@@ -252,6 +253,22 @@ function SubmissionEditor({ submission, onSaved, onCancel }) {
       setError("Couldn't save that. Try again.");
       return;
     }
+
+    // Only email the client the first time this goes "ready" — not on
+    // every later tweak, so they don't get repeat notifications.
+    if (!wasAlreadyReady && submission.submitterEmail) {
+      fetch(import.meta.env.VITE_NOTIFY_CLIENT_URL || "/api/notify-client", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientEmail: submission.submitterEmail,
+          goalLabel: submission.goal_label,
+        }),
+      }).catch(() => {
+        // Silently ignore — the programme itself already saved fine.
+      });
+    }
+
     onSaved();
   }
 

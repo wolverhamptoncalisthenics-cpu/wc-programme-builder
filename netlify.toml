@@ -17,3 +17,8 @@
   from = "/api/notify-coach"
   to = "/.netlify/functions/notify-coach"
   status = 200
+
+[[redirects]]
+  from = "/api/notify-client"
+  to = "/.netlify/functions/notify-client"
+  status = 200
