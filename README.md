@@ -106,43 +106,59 @@ section is just here in case you ever need to fix something by hand.
 
 ## Setting up email notifications
 
-You and Tim get emailed at the same shared inbox the moment someone
-submits the questionnaire. The app calls the notification function
-directly right after saving a submission — no Supabase webhook needed
-(we tried that route first, but it hit an infrastructure quirk on some
-Supabase projects around a missing internal schema, so this simpler
-approach sidesteps it entirely).
+Two things trigger an email: you and Tim get notified the moment
+someone submits the questionnaire, and the person themselves gets
+notified once their programme is marked "ready" in the coach
+dashboard. Both send through your own Gmail account, using something
+called an "app password" rather than your normal login password
+(Google requires this for any app sending on your behalf).
 
-**1. Create a Resend account**
+**1. Turn on 2-Step Verification** (if it isn't already on)
 
-Go to resend.com, sign up free. Under **API Keys**, create one and
-copy it.
+Go to myaccount.google.com/security on the Gmail account you want to
+send from. Under "How you sign in to Google", turn on **2-Step
+Verification** if it isn't already — this is required before Google
+will let you create an app password.
 
-**2. Add environment variables in Netlify**
+**2. Create an app password**
+
+Still in myaccount.google.com/security, search for **App passwords**
+(or go to myaccount.google.com/apppasswords directly). Create one,
+name it something like "Wolverhampton Calisthenics site", and Google
+will show you a 16-character code. Copy it — you won't be able to see
+it again after leaving the page.
+
+**3. Add environment variables in Netlify**
 
 Same place as before (Site settings > Environment variables):
 
-- `RESEND_API_KEY` — the key from Resend
+- `GMAIL_USER` — the Gmail address you're sending from, e.g.
+  `wolverhamptoncalisthenics@gmail.com`
+- `GMAIL_APP_PASSWORD` — the 16-character code from step 2 (remove any
+  spaces Google shows it with)
 - `COACH_NOTIFY_EMAIL` — the shared inbox you and Tim want notified at
+  for new submissions (can be the same Gmail address, or different)
 
 Trigger a redeploy after adding these, then submit a test
-questionnaire on the live site and check the shared inbox — it should
-land within a few seconds.
+questionnaire on the live site and check the inbox — it should land
+within a few seconds. Then test the other direction too: mark a test
+submission "ready" in the coach dashboard and confirm the client-side
+email arrives.
 
-**A note on reliability:** because this fires from the person's own
-browser right after they submit, it needs their connection to still be
-open for that brief moment. In practice this is essentially always the
-case, but if you ever suspect an email didn't send, the submission
-itself will still be sitting safely in the coach dashboard regardless
-— the email is just a convenience nudge, not the only way you'll find
-out about it.
+**A note on reliability:** the "new submission" email fires from the
+person's own browser right after they submit, so it needs their
+connection to still be open for that brief moment. In practice this is
+essentially always the case, but if you ever suspect an email didn't
+send, the submission itself will still be sitting safely in the coach
+dashboard regardless — the email is just a convenience nudge, not the
+only way you'll find out about it.
 
-**A note on the "from" address:** right now emails send from Resend's
-own shared testing address, which works immediately but can look less
-trustworthy to email providers. Once you're ready to go live properly,
-verify your own domain in Resend (a quick DNS step) and change the
-`from` address in `netlify/functions/notify-coach.js` to something
-like `Wolverhampton Calisthenics <hello@yourdomain.com>`.
+**A note on sending limits:** Gmail allows up to 500 emails a day sent
+this way, comfortably more than this app will need at your current
+scale. If the community grows large enough to bump into that, or you
+want a more "official" sending address than a Gmail one, moving to a
+proper email service with your own verified domain (like Resend) is a
+sensible upgrade at that point, not something to worry about now.
 
 ## What's still to build (next stages)
 

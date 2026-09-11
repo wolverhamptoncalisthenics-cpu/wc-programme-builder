@@ -1,20 +1,18 @@
 // Called directly by the app right after a submission is saved to the
-// database. Sends you and Tim an email via Resend.
+// database. Sends you and Tim an email via your Gmail account.
+
+import { getTransporter } from "./lib/gmail.js";
 
 export async function handler(event) {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method not allowed" };
   }
 
-  const resendApiKey = process.env.RESEND_API_KEY;
   const notifyEmail = process.env.COACH_NOTIFY_EMAIL;
-
-  if (!resendApiKey || !notifyEmail) {
+  if (!notifyEmail) {
     return {
       statusCode: 500,
-      body: JSON.stringify({
-        error: "Missing RESEND_API_KEY or COACH_NOTIFY_EMAIL environment variable in Netlify.",
-      }),
+      body: JSON.stringify({ error: "Missing COACH_NOTIFY_EMAIL environment variable in Netlify." }),
     };
   }
 
@@ -34,26 +32,13 @@ export async function handler(event) {
       <p>Log into the coach dashboard to build their programme.</p>
     `;
 
-    const sendRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        // Resend's shared testing address — swap for your own verified
-        // domain address once you've set one up in Resend, see README.
-        from: "Wolverhampton Calisthenics <onboarding@resend.dev>",
-        to: notifyEmail,
-        subject: `New submission: ${goalLabel}`,
-        html: emailBody,
-      }),
+    const transporter = getTransporter();
+    await transporter.sendMail({
+      from: `Wolverhampton Calisthenics <${process.env.GMAIL_USER}>`,
+      to: notifyEmail,
+      subject: `New submission: ${goalLabel}`,
+      html: emailBody,
     });
-
-    if (!sendRes.ok) {
-      const errText = await sendRes.text();
-      return { statusCode: 500, body: JSON.stringify({ error: errText }) };
-    }
 
     return { statusCode: 200, body: JSON.stringify({ sent: true }) };
   } catch (err) {
