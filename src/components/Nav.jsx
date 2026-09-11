@@ -41,7 +41,7 @@ export default function Nav({ onGoHome, onOpenAccount }) {
               {l.label}
             </a>
           ))}
-          {user && (
+          {user && !isCoach && (
             <button
               onClick={() => onOpenAccount?.()}
               className="text-sm font-body text-brand-light hover:text-white transition-colors flex items-center gap-1.5"
@@ -95,7 +95,7 @@ export default function Nav({ onGoHome, onOpenAccount }) {
               {l.label}
             </a>
           ))}
-          {user && (
+          {user && !isCoach && (
             <button
               onClick={() => {
                 onOpenAccount?.();

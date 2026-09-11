@@ -16,7 +16,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { supabase } from "./lib/supabase";
 
 function AppInner() {
-  const { user, loading, passwordRecovery } = useAuth();
+  const { user, loading, passwordRecovery, isCoach } = useAuth();
   const [submissionResult, setSubmissionResult] = useState(null); // { status, plan, goal }
   const [checkingExisting, setCheckingExisting] = useState(true);
   const [builderKey, setBuilderKey] = useState(0);
@@ -24,7 +24,10 @@ function AppInner() {
 
   useEffect(() => {
     if (loading) return;
-    if (!user) {
+    // Coach accounts shouldn't see a "your programme" status on their
+    // own account page — that's for clients. Coaches manage everyone
+    // else's submissions through the coach dashboard instead.
+    if (!user || isCoach) {
       setCheckingExisting(false);
       return;
     }
@@ -98,7 +101,7 @@ function AppInner() {
     return () => {
       cancelled = true;
     };
-  }, [user, loading]);
+  }, [user, loading, isCoach]);
 
   function handleSubmitted(result) {
     setSubmissionResult(result);
