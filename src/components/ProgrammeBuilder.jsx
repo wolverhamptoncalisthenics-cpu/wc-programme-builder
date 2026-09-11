@@ -181,7 +181,25 @@ export default function ProgrammeBuilder({ onSubmitted }) {
         goal: answers.goal,
       });
     } catch (e) {
-      setError("Something went wrong saving that. Give it another go.");
+      // Before alarming the person, check whether the submission
+      // actually made it in despite the error — this can happen if the
+      // write itself succeeded but the confirmation response got lost
+      // to a brief network hiccup, rather than the save genuinely
+      // failing.
+      const { data: justSaved } = await supabase
+        .from("submissions")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("goal_id", answers.goalId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (justSaved) {
+        onSubmitted({ status: "pending_coach", plan: null, goal: answers.goal });
+      } else {
+        setError("Something went wrong saving that. Give it another go.");
+      }
     } finally {
       setSubmitting(false);
     }

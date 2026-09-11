@@ -17,7 +17,6 @@ const TIERS = [
   {
     name: "First Pull-Up",
     price: "£49.99",
-    priceNote: "12 weeks of programming",
     description: "Tim's structured path from dead hang to your first strict pull-up.",
     features: [
       "Everything in Free",
@@ -30,7 +29,6 @@ const TIERS = [
   {
     name: "Press Handstand",
     price: "£49.99",
-    priceNote: "12 weeks of programming",
     description: "Tom's programme for compression, strength, and control to press to handstand.",
     features: [
       "Everything in Free",
@@ -67,9 +65,6 @@ export default function Pricing() {
             <p className="font-display font-extrabold text-3xl text-brand-orange mt-2">
               {tier.price}
             </p>
-            {tier.priceNote && (
-              <p className="text-brand-light text-xs font-body mt-0.5">{tier.priceNote}</p>
-            )}
             <p className="text-brand-light text-sm font-body mt-3 leading-relaxed">
               {tier.description}
             </p>
