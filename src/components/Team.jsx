@@ -14,13 +14,19 @@ const TEAM = [
     name: "Tom",
     role: "Coach & Founder",
     photo: null,
-    bio: "Level 3 qualified personal trainer working toward Level 4 specialisms in GP referral, lower back pain, and obesity & diabetes. Long-term hand balancing practitioner, currently chasing the one-arm handstand and holding a Guinness World Record attempt for longest diamond-grip handstand. Runs Saturday classes and co-founded Stacked, a separate handstand-focused community.",
+    bio: [
+      "I'm a Level 3 qualified personal trainer, and I've been working in the fitness industry for the past 6 years. I started weightlifting in my teens, but got bored of typical bodybuilding routines pretty quickly. That sent me exploring other things, running, yoga, and eventually bodyweight training, which is where I got properly hooked.",
+      "Learning to handstand has been a huge part of that journey, and for the past few years I've been sharing that with others, helping people learn to balance on their hands from scratch. I want to be able to help people who don't fit the typical \"gym-goer\" mould too.",
+      "I'm continuing to refine my one-arm handstand and other advanced bodyweight strength skills. I still consider myself a student of this as much as a coach, and I learn from other coaches whenever I'm able to.",
+    ],
   },
   {
     name: "Tim",
     role: "Coach & Founder",
     photo: null,
-    bio: "Co-runs Wolverhampton Calisthenics alongside Tom, alternating teaching weeks. [Tim, add a couple of lines here about your background and what you focus on coaching.]",
+    bio: [
+      "Co-runs Wolverhampton Calisthenics alongside Tom, alternating teaching weeks. [Tim, add a couple of lines here about your background and what you focus on coaching.]",
+    ],
   },
 ];
 
@@ -51,7 +57,11 @@ export default function Team() {
             <p className="text-brand-orange text-xs font-display font-bold uppercase tracking-wide mt-1">
               {member.role}
             </p>
-            <p className="text-brand-light text-sm font-body mt-4 leading-relaxed">{member.bio}</p>
+            <div className="text-brand-light text-sm font-body mt-4 leading-relaxed space-y-3">
+              {member.bio.map((paragraph, i) => (
+                <p key={i}>{paragraph}</p>
+              ))}
+            </div>
           </div>
         ))}
       </div>
