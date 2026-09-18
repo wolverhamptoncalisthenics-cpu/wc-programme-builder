@@ -17,7 +17,7 @@ const TIERS = [
   {
     name: "First Pull-Up",
     price: "£49.99",
-    description: "Tim's structured path from dead hang to your first strict pull-up.",
+    description: "Tim's structured path from dead hang to your first pull-up.",
     features: [
       "Everything in Free",
       "Programme built specifically for pulling strength",

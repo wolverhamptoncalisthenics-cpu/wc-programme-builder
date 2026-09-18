@@ -47,8 +47,8 @@ starter plan while you wait" option.
 2. Under **Site settings > Environment variables**, add:
    - `VITE_SUPABASE_URL` — your Supabase project URL
    - `VITE_SUPABASE_ANON_KEY` — your Supabase anon/publishable key
-   - (keep the `UNLOCK_CODE_...` variables from before if you still
-     want the unlock-code flow for paid goals)
+   - The Stripe payment variables, see "Setting up Stripe payments"
+     below
 3. Trigger a redeploy after adding the variables
 
 ## Setting up the coach dashboard
@@ -103,6 +103,66 @@ section is just here in case you ever need to fix something by hand.
    ```
 4. Change `status` from `pending_coach` to `ready`
 5. They'll see it next time they log in
+
+## Setting up Stripe payments
+
+Paid goals (the press handstand and first pull-up programmes) unlock
+through a real payment, using your existing Stripe account. Nobody
+types in a code any more — Stripe handles the payment page itself,
+and the unlock is recorded permanently against the person's account
+the moment they're sent back to your site.
+
+**1. Run the database migration**
+
+In Supabase's SQL Editor, run `supabase/add-stripe.sql` — this adds
+the `unlocked_goals` table that records confirmed payments.
+
+**2. Create a Price for each paid goal in Stripe**
+
+In your Stripe dashboard: **Product catalog > Add product**. Create
+one for each paid goal (e.g. "First Pull-Up Programme", £49.99,
+one-time). Once created, click into the product and copy its **Price
+ID** (starts with `price_...`, not the Product ID which starts with
+`prod_...`).
+
+**3. Add environment variables in Netlify**
+
+- `STRIPE_SECRET_KEY` — from Stripe: **Developers > API keys >
+  Secret key**. Keep this one private, it's powerful
+- `STRIPE_PRICE_FIRST_STRICT_PULL_UP` — the Price ID for Tim's
+  product
+- `STRIPE_PRICE_PRESS_HANDSTAND` — the Price ID for your product
+- `SUPABASE_URL` — same value as `VITE_SUPABASE_URL`, just without the
+  `VITE_` prefix (needed here because this runs on the server, not in
+  the browser)
+- `SUPABASE_SERVICE_ROLE_KEY` — from Supabase, **Project Settings >
+  API > service_role (secret) key**. This bypasses your database's
+  security rules entirely, which is exactly why only this one
+  server-side function is allowed to use it — never put it anywhere
+  in the app's own browser-facing code
+
+Trigger a redeploy after adding these.
+
+**4. Test it with a real test payment**
+
+Stripe accounts start in **test mode** by default (check the toggle
+in the top right of the Stripe dashboard). While in test mode, use
+Stripe's test card number `4242 4242 4242 4242`, any future expiry
+date, and any 3-digit CVC, to go through a full "payment" without
+spending real money. Confirm the goal unlocks on your account
+afterwards, and that it's still unlocked if you log out and back in.
+
+**5. Go live**
+
+Once you're happy it works, flip Stripe's toggle from test mode to
+live mode, and create live-mode versions of your two Products/Prices
+(test and live mode have entirely separate data in Stripe). Update the
+`STRIPE_SECRET_KEY` and the two `STRIPE_PRICE_...` variables in
+Netlify with the live-mode values, then redeploy.
+
+To add a third paid goal later, create its Price in Stripe, add a new
+`STRIPE_PRICE_...` variable following the same naming pattern, and add
+the goal to the `GOALS` array in `src/data/programme.js`.
 
 ## Setting up email notifications
 
