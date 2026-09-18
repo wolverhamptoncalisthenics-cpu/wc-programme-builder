@@ -25,7 +25,7 @@ export const GOALS = [
   { id: "handstand-basics", label: "Handstand basics", tier: "free" },
   {
     id: "first-strict-pull-up",
-    label: "First strict pull-up",
+    label: "First pull-up",
     tier: "paid",
     price: "£49.99",
     product: "Tim's First Pull-Up Programme",

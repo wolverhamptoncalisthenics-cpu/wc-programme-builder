@@ -212,43 +212,31 @@ export default function ProgrammeBuilder({ onSubmitted, unlockedGoals }) {
               const selected = answers.goal === goal.label;
               const paying = payingGoalId === goal.id;
               return (
-                <div key={goal.id}>
-                  <button
-                    onClick={() => selectGoal(goal)}
-                    disabled={locked}
-                    className={`w-full text-left px-4 py-3 rounded-sm border transition-colors font-body text-sm flex items-center justify-between gap-3 ${
-                      selected
-                        ? "border-brand-orange bg-brand-orange/10 text-white"
-                        : locked
-                        ? "border-white/10 text-brand-light/70"
-                        : "border-white/15 text-brand-light hover:border-white/40"
-                    }`}
-                  >
-                    <span>{goal.label}</span>
-                    {!locked && goal.tier === "paid" && (
+                <button
+                  key={goal.id}
+                  onClick={() => (locked ? startCheckout(goal) : selectGoal(goal))}
+                  disabled={paying}
+                  className={`w-full text-left px-4 py-3 rounded-sm border transition-colors font-body text-sm flex items-center justify-between gap-3 ${
+                    selected
+                      ? "border-brand-orange bg-brand-orange/10 text-white"
+                      : "border-white/15 text-brand-light hover:border-white/40"
+                  }`}
+                >
+                  <span>{goal.label}</span>
+                  {paying ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-brand-orange shrink-0" />
+                  ) : locked ? (
+                    <span className="flex items-center gap-1.5 text-brand-orange text-xs font-display font-bold uppercase tracking-wide shrink-0">
+                      <Lock className="w-3.5 h-3.5" /> {goal.price}
+                    </span>
+                  ) : (
+                    goal.tier === "paid" && (
                       <span className="flex items-center gap-1.5 text-brand-orange text-xs shrink-0">
                         <Check className="w-3.5 h-3.5" /> Unlocked
                       </span>
-                    )}
-                  </button>
-
-                  {locked && (
-                    <button
-                      onClick={() => startCheckout(goal)}
-                      disabled={paying}
-                      className="mt-2 w-full flex items-center justify-center gap-2 border border-brand-orange/40 bg-brand-orange/5 hover:bg-brand-orange/10 transition-colors rounded-sm px-4 py-2.5 text-sm font-body text-brand-light"
-                    >
-                      {paying ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-brand-orange" />
-                      ) : (
-                        <>
-                          <Lock className="w-3.5 h-3.5 text-brand-orange" />
-                          Pay {goal.price} to unlock {goal.product} (12 weeks of programming)
-                        </>
-                      )}
-                    </button>
+                    )
                   )}
-                </div>
+                </button>
               );
             })}
           </div>
