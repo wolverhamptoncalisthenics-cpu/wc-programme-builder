@@ -12,7 +12,7 @@ const FAQS = [
   },
   {
     q: "How does unlocking a paid programme work?",
-    a: "After paying (details on how to pay are outside this app for now), you'll get an access code. Enter it on the goal you've unlocked, then submit the quiz as normal and your coach will build it for you.",
+    a: "Once you've created an account, paid goals show a \"Pay to unlock\" button that takes you to a secure payment page. Once paid, that goal unlocks on your account permanently, no code needed, and you can carry on with the quiz.",
   },
   {
     q: "Can I build more than one programme?",

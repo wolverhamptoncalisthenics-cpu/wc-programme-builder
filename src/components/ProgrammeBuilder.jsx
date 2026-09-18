@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ChevronRight, Loader2, ArrowLeft, Lock, Check } from "lucide-react";
 import { GOALS } from "../data/programme";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
-import AuthForm from "./AuthForm";
 
 const QUESTIONS = [
   {
@@ -35,71 +34,45 @@ const QUESTIONS = [
   },
 ];
 
-const UNLOCKED_STORAGE_KEY = "wc-unlocked-goals";
-
-export default function ProgrammeBuilder({ onSubmitted }) {
+export default function ProgrammeBuilder({ onSubmitted, unlockedGoals }) {
   const { user } = useAuth();
-  const [step, setStep] = useState(0); // 0 = goal, 1..N = questions, N+1 = auth/submit
+  const [step, setStep] = useState(0); // 0 = goal, 1..N = questions, N+1 = submit
   const [answers, setAnswers] = useState({ equipment: [] });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
-
-  const [unlockedGoals, setUnlockedGoals] = useState([]);
-  const [unlockTarget, setUnlockTarget] = useState(null);
-  const [codeInput, setCodeInput] = useState("");
-  const [codeChecking, setCodeChecking] = useState(false);
-  const [codeError, setCodeError] = useState(null);
-
-  useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem(UNLOCKED_STORAGE_KEY) || "[]");
-      if (Array.isArray(stored)) setUnlockedGoals(stored);
-    } catch {
-      // ignore malformed storage
-    }
-  }, []);
+  const [payingGoalId, setPayingGoalId] = useState(null);
 
   const totalSteps = 1 + QUESTIONS.length;
   const current = step >= 1 && step <= QUESTIONS.length ? QUESTIONS[step - 1] : null;
-  const atSubmitStep = step === totalSteps;
 
   function isUnlocked(goalId) {
     return unlockedGoals.includes(goalId);
   }
 
   function selectGoal(goal) {
-    if (goal.tier === "paid" && !isUnlocked(goal.id)) {
-      setUnlockTarget(goal.id);
-      setCodeInput("");
-      setCodeError(null);
-      return;
-    }
+    if (goal.tier === "paid" && !isUnlocked(goal.id)) return; // pay button handles this instead
     setAnswers((a) => ({ ...a, goal: goal.label, goalId: goal.id, tier: goal.tier }));
   }
 
-  async function submitCode(goal) {
-    setCodeChecking(true);
-    setCodeError(null);
+  async function startCheckout(goal) {
+    setPayingGoalId(goal.id);
+    setError(null);
     try {
-      const response = await fetch(import.meta.env.VITE_VERIFY_URL || "/api/verify-code", {
+      const response = await fetch(import.meta.env.VITE_CHECKOUT_URL || "/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ goalId: goal.id, code: codeInput.trim() }),
+        body: JSON.stringify({ goalId: goal.id, userId: user.id, userEmail: user.email }),
       });
       const data = await response.json();
-      if (data.valid) {
-        const next = [...new Set([...unlockedGoals, goal.id])];
-        setUnlockedGoals(next);
-        localStorage.setItem(UNLOCKED_STORAGE_KEY, JSON.stringify(next));
-        setUnlockTarget(null);
-        setAnswers((a) => ({ ...a, goal: goal.label, goalId: goal.id, tier: goal.tier }));
+      if (data.url) {
+        window.location.href = data.url; // off to Stripe's hosted checkout page
       } else {
-        setCodeError("That code doesn't look right. Double check it and try again.");
+        setError("Couldn't start checkout just now. Try again in a moment.");
+        setPayingGoalId(null);
       }
     } catch (e) {
-      setCodeError("Couldn't check that code just now. Try again in a moment.");
-    } finally {
-      setCodeChecking(false);
+      setError("Couldn't start checkout just now. Try again in a moment.");
+      setPayingGoalId(null);
     }
   }
 
@@ -147,10 +120,9 @@ export default function ProgrammeBuilder({ onSubmitted }) {
       let { error: insertError } = await insertSubmission();
 
       if (insertError) {
-        // The same session-timing hiccup that affected the account
-        // page can occasionally hit this request too, right after a
-        // fresh login. Refresh the session and try once more before
-        // giving up, so people don't have to manually hit submit twice.
+        // A session-timing hiccup can occasionally hit this request
+        // right after a fresh login. Refresh the session and try once
+        // more before giving up.
         await supabase.auth.refreshSession();
         ({ error: insertError } = await insertSubmission());
       }
@@ -207,13 +179,11 @@ export default function ProgrammeBuilder({ onSubmitted }) {
 
   function next() {
     if (step === totalSteps - 1) {
-      setStep(totalSteps); // move to auth/submit step
+      submitQuestionnaire();
     } else {
       setStep((s) => s + 1);
     }
   }
-
-  const unlockGoal = GOALS.find((g) => g.id === unlockTarget);
 
   return (
     <div className="w-full max-w-md mx-auto bg-black/20 border border-white/10 rounded-md p-6">
@@ -240,22 +210,21 @@ export default function ProgrammeBuilder({ onSubmitted }) {
             {GOALS.map((goal) => {
               const locked = goal.tier === "paid" && !isUnlocked(goal.id);
               const selected = answers.goal === goal.label;
+              const paying = payingGoalId === goal.id;
               return (
                 <div key={goal.id}>
                   <button
                     onClick={() => selectGoal(goal)}
+                    disabled={locked}
                     className={`w-full text-left px-4 py-3 rounded-sm border transition-colors font-body text-sm flex items-center justify-between gap-3 ${
                       selected
                         ? "border-brand-orange bg-brand-orange/10 text-white"
+                        : locked
+                        ? "border-white/10 text-brand-light/70"
                         : "border-white/15 text-brand-light hover:border-white/40"
                     }`}
                   >
                     <span>{goal.label}</span>
-                    {locked && (
-                      <span className="flex items-center gap-1.5 text-brand-orange text-xs font-display font-bold uppercase tracking-wide shrink-0">
-                        <Lock className="w-3.5 h-3.5" /> {goal.price}
-                      </span>
-                    )}
                     {!locked && goal.tier === "paid" && (
                       <span className="flex items-center gap-1.5 text-brand-orange text-xs shrink-0">
                         <Check className="w-3.5 h-3.5" /> Unlocked
@@ -263,41 +232,28 @@ export default function ProgrammeBuilder({ onSubmitted }) {
                     )}
                   </button>
 
-                  {unlockTarget === goal.id && (
-                    <div className="mt-2 p-4 border border-brand-orange/40 bg-brand-orange/5 rounded-sm space-y-3">
-                      <p className="text-sm text-brand-light font-body">
-                        This goal unlocks with <span className="text-white">{goal.product}</span> (
-                        {goal.price}, covers 12 weeks of programming). Already got a code? Enter it
-                        below.
-                      </p>
-                      <div className="flex gap-2">
-                        <input
-                          value={codeInput}
-                          onChange={(e) => setCodeInput(e.target.value)}
-                          placeholder="Access code"
-                          className="flex-1 bg-white/5 border border-white/15 focus:border-brand-orange outline-none rounded-sm px-3 py-2 text-sm text-white font-body"
-                        />
-                        <button
-                          onClick={() => submitCode(goal)}
-                          disabled={!codeInput.trim() || codeChecking}
-                          className="bg-brand-orange hover:brightness-110 disabled:bg-white/10 disabled:text-white/30 transition-all text-brand-dark font-display font-bold uppercase text-xs tracking-wide px-4 rounded-sm flex items-center justify-center"
-                        >
-                          {codeChecking ? <Loader2 className="w-4 h-4 animate-spin" /> : "Unlock"}
-                        </button>
-                      </div>
-                      {codeError && <p className="text-brand-orange text-xs font-body">{codeError}</p>}
-                      <button
-                        onClick={() => setUnlockTarget(null)}
-                        className="text-brand-light text-xs hover:text-white transition-colors font-body"
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                  {locked && (
+                    <button
+                      onClick={() => startCheckout(goal)}
+                      disabled={paying}
+                      className="mt-2 w-full flex items-center justify-center gap-2 border border-brand-orange/40 bg-brand-orange/5 hover:bg-brand-orange/10 transition-colors rounded-sm px-4 py-2.5 text-sm font-body text-brand-light"
+                    >
+                      {paying ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-brand-orange" />
+                      ) : (
+                        <>
+                          <Lock className="w-3.5 h-3.5 text-brand-orange" />
+                          Pay {goal.price} to unlock {goal.product} (12 weeks of programming)
+                        </>
+                      )}
+                    </button>
                   )}
                 </div>
               );
             })}
           </div>
+
+          {error && <p className="text-brand-orange text-sm font-body">{error}</p>}
 
           <button
             onClick={next}
@@ -383,47 +339,22 @@ export default function ProgrammeBuilder({ onSubmitted }) {
             </button>
             <button
               onClick={next}
-              disabled={!canAdvance()}
+              disabled={!canAdvance() || submitting}
               className="flex-1 bg-brand-orange hover:brightness-110 disabled:bg-white/10 disabled:text-white/30 transition-all text-brand-dark font-display font-bold uppercase tracking-wide py-3 rounded-sm flex items-center justify-center gap-2"
             >
-              Next <ChevronRight className="w-4 h-4" strokeWidth={3} />
+              {submitting ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : step === totalSteps - 1 ? (
+                "Submit & get my programme"
+              ) : (
+                <>
+                  Next <ChevronRight className="w-4 h-4" strokeWidth={3} />
+                </>
+              )}
             </button>
           </div>
-        </div>
-      )}
-
-      {/* AUTH + SUBMIT STEP */}
-      {atSubmitStep && (
-        <div className="space-y-6">
-          <div>
-            <span className="font-display font-bold text-brand-orange text-sm tracking-widest uppercase">
-              Almost there
-            </span>
-            <h2 className="font-display font-bold text-2xl leading-tight mt-1">
-              {user ? "Ready to submit" : "Create your account to get your programme"}
-            </h2>
-          </div>
-
-          {!user && <AuthForm onAuthed={submitQuestionnaire} />}
-
-          {user && (
-            <button
-              onClick={submitQuestionnaire}
-              disabled={submitting}
-              className="w-full bg-brand-orange hover:brightness-110 disabled:bg-white/10 transition-all text-brand-dark font-display font-bold uppercase tracking-wide py-3 rounded-sm flex items-center justify-center gap-2"
-            >
-              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit & get my programme"}
-            </button>
-          )}
 
           {error && <p className="text-brand-orange text-sm font-body">{error}</p>}
-
-          <button
-            onClick={() => setStep(QUESTIONS.length)}
-            className="text-brand-light text-xs hover:text-white transition-colors font-body flex items-center gap-1"
-          >
-            <ArrowLeft className="w-3 h-3" /> Back to questions
-          </button>
         </div>
       )}
     </div>

@@ -1,19 +1,23 @@
 // ─────────────────────────────────────────────────────────────
 // GOALS
-// Free goals are open to everyone. Paid goals show a lock, price,
-// and product name, and need an access code to unlock (checked
-// server-side — see netlify/functions/verify-code.js).
+// Free goals are open to everyone. Paid goals show a lock and price,
+// with a "Pay to unlock" button that starts a real Stripe payment
+// (see netlify/functions/create-checkout-session.js and
+// confirm-checkout.js). Once paid, the unlock is recorded against the
+// person's account in the unlocked_goals table, not on their device.
 //
 // Note: the `id` values below are internal keys only (used to match
 // database rows and environment variable names) — they're never shown
 // to users.
 //
-// To change a price, edit `price` below. To change or add codes,
-// set environment variables in Netlify named:
-//   UNLOCK_CODE_FIRST_STRICT_PULL_UP
-//   UNLOCK_CODE_PRESS_HANDSTAND
+// To change a price, edit `price` below (this is just the displayed
+// text — the actual amount charged comes from the Stripe Price you
+// set up, see README). Each paid goal needs a matching Stripe Price
+// ID set as an environment variable in Netlify named:
+//   STRIPE_PRICE_FIRST_STRICT_PULL_UP
+//   STRIPE_PRICE_PRESS_HANDSTAND
 // (the id, uppercased, with hyphens turned to underscores, prefixed
-// with UNLOCK_CODE_)
+// with STRIPE_PRICE_)
 // ─────────────────────────────────────────────────────────────
 export const GOALS = [
   { id: "general-strength", label: "General strength & mobility", tier: "free" },
