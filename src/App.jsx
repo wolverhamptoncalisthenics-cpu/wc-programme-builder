@@ -13,6 +13,7 @@ import Footer from "./components/Footer";
 import AccountPage from "./components/AccountPage";
 import ContactPage from "./components/ContactPage";
 import PrivacyPolicyPage from "./components/PrivacyPolicyPage";
+import RefundPolicyPage from "./components/RefundPolicyPage";
 import SetNewPasswordPage from "./components/SetNewPasswordPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { supabase } from "./lib/supabase";
@@ -207,6 +208,15 @@ function AppInner() {
     );
   }
 
+  if (view === "refunds") {
+    return (
+      <div className="min-h-screen w-full bg-brand-dark">
+        <Nav onGoHome={() => setView("site")} onOpenAccount={() => setView("account")} />
+        <RefundPolicyPage />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen w-full bg-brand-dark text-white font-body">
       <Nav onGoHome={() => setView("site")} onOpenAccount={() => setView("account")} />
@@ -258,7 +268,11 @@ function AppInner() {
         <FAQ />
       </div>
 
-      <Footer onOpenContact={() => setView("contact")} onOpenPrivacy={() => setView("privacy")} />
+      <Footer
+        onOpenContact={() => setView("contact")}
+        onOpenPrivacy={() => setView("privacy")}
+        onOpenRefunds={() => setView("refunds")}
+      />
     </div>
   );
 }
