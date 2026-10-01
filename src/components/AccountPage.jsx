@@ -73,7 +73,10 @@ export default function AccountPage({ submissionResult, checkingExisting, onRest
             Your progress
           </h2>
         </div>
-        <ProgressTracker plan={submissionResult?.plan ? submissionResult.plan.quickPlan : null} />
+        <ProgressTracker
+          plan={submissionResult?.plan ? submissionResult.plan.quickPlan : null}
+          submissionId={submissionResult?.id || null}
+        />
       </section>
     </div>
   );

@@ -1,32 +1,35 @@
 import { useState, useEffect } from "react";
-import { Loader2, X, Plus, Trash2, Check, Clock } from "lucide-react";
+import { Loader2, X, Plus, Trash2, Check, Clock, Target } from "lucide-react";
 import { supabase } from "../lib/supabase";
-import { EXERCISE_LIBRARY } from "../data/programme";
+import { fetchExerciseNames, addExerciseName } from "../lib/exercises";
 
-const EXERCISE_NAMES = Object.keys(EXERCISE_LIBRARY);
-
-function emptyExercise() {
-  return { name: EXERCISE_NAMES[0], prescription: "", videoUrl: "", notes: "" };
+function emptyExercise(exerciseNames) {
+  return { order: "", name: exerciseNames[0] || "", sets: "", reps: "", tempo: "", notes: "", videoUrl: "" };
 }
 
-function emptyDay() {
-  return { day: "", focus: "", exercises: [emptyExercise()] };
+function emptyDay(exerciseNames) {
+  return { day: "", focus: "", exercises: [emptyExercise(exerciseNames)] };
 }
 
-function emptyPhase() {
+function emptyPhase(exerciseNames) {
   return {
     phase: "",
     focus: "",
     goals: [""],
-    keyExercises: [emptyExercise()],
+    keyExercises: [emptyExercise(exerciseNames)],
   };
 }
 
-function emptyForm() {
-  return { summary: "", focus: "", days: [emptyDay()], phases: [emptyPhase()] };
+function emptyForm(exerciseNames) {
+  return {
+    summary: "",
+    focus: "",
+    days: [emptyDay(exerciseNames)],
+    phases: [emptyPhase(exerciseNames)],
+  };
 }
 
-function ExerciseFields({ list, onChange }) {
+function ExerciseFields({ list, onChange, exerciseNames }) {
   function update(i, field, value) {
     const next = [...list];
     next[i] = { ...next[i], [field]: value };
@@ -36,33 +39,53 @@ function ExerciseFields({ list, onChange }) {
     onChange(list.filter((_, idx) => idx !== i));
   }
   function add() {
-    onChange([...list, emptyExercise()]);
+    onChange([...list, emptyExercise(exerciseNames)]);
   }
   return (
     <div className="space-y-3">
       {list.map((ex, i) => (
         <div key={i} className="border border-white/10 rounded-sm p-2 space-y-1.5">
           <div className="flex gap-2">
+            <input
+              value={ex.order}
+              onChange={(e) => update(i, "order", e.target.value)}
+              placeholder="A1"
+              className="w-14 bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
+            />
             <select
               value={ex.name}
               onChange={(e) => update(i, "name", e.target.value)}
               className="flex-1 bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
             >
-              {EXERCISE_NAMES.map((n) => (
+              {exerciseNames.map((n) => (
                 <option key={n} value={n} style={{ backgroundColor: "#42403F", color: "#ffffff" }}>
                   {n}
                 </option>
               ))}
             </select>
-            <input
-              value={ex.prescription}
-              onChange={(e) => update(i, "prescription", e.target.value)}
-              placeholder="3x8"
-              className="w-20 bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
-            />
             <button onClick={() => remove(i)} className="text-brand-light hover:text-brand-orange shrink-0">
               <X className="w-4 h-4" />
             </button>
+          </div>
+          <div className="flex gap-2">
+            <input
+              value={ex.sets}
+              onChange={(e) => update(i, "sets", e.target.value)}
+              placeholder="Sets"
+              className="flex-1 bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
+            />
+            <input
+              value={ex.reps}
+              onChange={(e) => update(i, "reps", e.target.value)}
+              placeholder="Reps"
+              className="flex-1 bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
+            />
+            <input
+              value={ex.tempo}
+              onChange={(e) => update(i, "tempo", e.target.value)}
+              placeholder="Tempo"
+              className="flex-1 bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
+            />
           </div>
           <input
             value={ex.videoUrl || ""}
@@ -88,7 +111,7 @@ function ExerciseFields({ list, onChange }) {
   );
 }
 
-function DayEditor({ days, onChange }) {
+function DayEditor({ days, onChange, exerciseNames }) {
   function update(i, field, value) {
     const next = [...days];
     next[i] = { ...next[i], [field]: value };
@@ -118,11 +141,15 @@ function DayEditor({ days, onChange }) {
               <Trash2 className="w-4 h-4" />
             </button>
           </div>
-          <ExerciseFields list={d.exercises} onChange={(v) => update(i, "exercises", v)} />
+          <ExerciseFields
+            list={d.exercises}
+            onChange={(v) => update(i, "exercises", v)}
+            exerciseNames={exerciseNames}
+          />
         </div>
       ))}
       <button
-        onClick={() => onChange([...days, emptyDay()])}
+        onClick={() => onChange([...days, emptyDay(exerciseNames)])}
         className="text-brand-orange text-xs font-body flex items-center gap-1 hover:text-white transition-colors"
       >
         <Plus className="w-3 h-3" /> Add day
@@ -165,7 +192,7 @@ function GoalFields({ list, onChange }) {
   );
 }
 
-function PhaseEditor({ phases, onChange }) {
+function PhaseEditor({ phases, onChange, exerciseNames }) {
   function update(i, field, value) {
     const next = [...phases];
     next[i] = { ...next[i], [field]: value };
@@ -205,12 +232,16 @@ function PhaseEditor({ phases, onChange }) {
             <span className="text-brand-light text-[10px] uppercase tracking-wide font-display font-bold">
               Key exercises
             </span>
-            <ExerciseFields list={p.keyExercises} onChange={(v) => update(i, "keyExercises", v)} />
+            <ExerciseFields
+              list={p.keyExercises}
+              onChange={(v) => update(i, "keyExercises", v)}
+              exerciseNames={exerciseNames}
+            />
           </div>
         </div>
       ))}
       <button
-        onClick={() => onChange([...phases, emptyPhase()])}
+        onClick={() => onChange([...phases, emptyPhase(exerciseNames)])}
         className="text-brand-orange text-xs font-body flex items-center gap-1 hover:text-white transition-colors"
       >
         <Plus className="w-3 h-3" /> Add phase
@@ -219,16 +250,138 @@ function PhaseEditor({ phases, onChange }) {
   );
 }
 
-function SubmissionEditor({ submission, onSaved, onCancel }) {
+function AddExerciseToLibrary({ onAdded }) {
+  const [name, setName] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [error, setError] = useState(null);
+
+  async function handleAdd() {
+    if (!name.trim()) return;
+    setAdding(true);
+    setError(null);
+    const { error: insertError } = await addExerciseName(name);
+    setAdding(false);
+    if (insertError) {
+      setError(insertError.message.includes("duplicate") ? "That's already in the list." : "Couldn't add that.");
+      return;
+    }
+    setName("");
+    onAdded();
+  }
+
+  return (
+    <div className="border border-white/10 rounded-sm p-3 space-y-2">
+      <span className="text-brand-light text-[10px] uppercase tracking-wide font-display font-bold">
+        Add a new exercise to the shared list
+      </span>
+      <div className="flex gap-2">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+          placeholder="e.g. Front lever hold"
+          className="flex-1 bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
+        />
+        <button
+          onClick={handleAdd}
+          disabled={adding || !name.trim()}
+          className="bg-brand-orange hover:brightness-110 disabled:bg-white/10 transition-all text-brand-dark rounded-sm px-3 flex items-center justify-center shrink-0"
+        >
+          {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+        </button>
+      </div>
+      {error && <p className="text-brand-orange text-xs font-body">{error}</p>}
+    </div>
+  );
+}
+
+function ClientGoals({ userId }) {
+  const [goals, setGoals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [newGoal, setNewGoal] = useState("");
+  const [adding, setAdding] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    const { data } = await supabase
+      .from("goals")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+    setGoals(data || []);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  async function addGoal() {
+    if (!newGoal.trim()) return;
+    setAdding(true);
+    await supabase.from("goals").insert({ user_id: userId, text: newGoal.trim(), source: "coach" });
+    setNewGoal("");
+    setAdding(false);
+    load();
+  }
+
+  return (
+    <div className="border border-white/10 rounded-sm p-3 space-y-2">
+      <span className="text-brand-light text-[10px] uppercase tracking-wide font-display font-bold flex items-center gap-1.5">
+        <Target className="w-3 h-3" /> This client's goals
+      </span>
+
+      {loading ? (
+        <Loader2 className="w-4 h-4 animate-spin text-brand-orange" />
+      ) : goals.length === 0 ? (
+        <p className="text-brand-light text-xs font-body">No goals set yet.</p>
+      ) : (
+        <ul className="space-y-1">
+          {goals.map((g) => (
+            <li key={g.id} className="text-xs text-white/90 font-body flex items-center gap-2">
+              {g.completed ? (
+                <Check className="w-3 h-3 text-brand-orange shrink-0" />
+              ) : (
+                <span className="w-3 h-3 border border-brand-light/40 rounded-sm shrink-0" />
+              )}
+              <span className={g.completed ? "line-through text-brand-light" : ""}>{g.text}</span>
+              <span className="text-brand-light/50">({g.source === "coach" ? "you" : "them"})</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="flex gap-2">
+        <input
+          value={newGoal}
+          onChange={(e) => setNewGoal(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && addGoal()}
+          placeholder="Add a goal for this client"
+          className="flex-1 bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
+        />
+        <button
+          onClick={addGoal}
+          disabled={adding || !newGoal.trim()}
+          className="bg-brand-orange hover:brightness-110 disabled:bg-white/10 transition-all text-brand-dark rounded-sm px-3 flex items-center justify-center shrink-0"
+        >
+          {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SubmissionEditor({ submission, onSaved, onCancel, exerciseNames, onExerciseAdded }) {
   const [form, setForm] = useState(
     submission.manual_programme
       ? {
           summary: submission.manual_programme.summary || "",
           focus: submission.manual_programme.focus || "",
-          days: submission.manual_programme.quickPlan?.days || [emptyDay()],
-          phases: submission.manual_programme.progression?.phases || [emptyPhase()],
+          days: submission.manual_programme.quickPlan?.days || [emptyDay(exerciseNames)],
+          phases: submission.manual_programme.progression?.phases || [emptyPhase(exerciseNames)],
         }
-      : emptyForm()
+      : emptyForm(exerciseNames)
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -306,12 +459,18 @@ function SubmissionEditor({ submission, onSaved, onCancel }) {
         />
       </div>
 
+      <AddExerciseToLibrary onAdded={onExerciseAdded} />
+
       <div>
         <span className="text-brand-light text-[10px] uppercase tracking-wide font-display font-bold">
           Weekly plan
         </span>
         <div className="mt-1">
-          <DayEditor days={form.days} onChange={(v) => setForm((f) => ({ ...f, days: v }))} />
+          <DayEditor
+            days={form.days}
+            onChange={(v) => setForm((f) => ({ ...f, days: v }))}
+            exerciseNames={exerciseNames}
+          />
         </div>
       </div>
 
@@ -320,9 +479,15 @@ function SubmissionEditor({ submission, onSaved, onCancel }) {
           Progression
         </span>
         <div className="mt-1">
-          <PhaseEditor phases={form.phases} onChange={(v) => setForm((f) => ({ ...f, phases: v }))} />
+          <PhaseEditor
+            phases={form.phases}
+            onChange={(v) => setForm((f) => ({ ...f, phases: v }))}
+            exerciseNames={exerciseNames}
+          />
         </div>
       </div>
+
+      <ClientGoals userId={submission.user_id} />
 
       {error && <p className="text-brand-orange text-xs font-body">{error}</p>}
 
@@ -349,9 +514,13 @@ export default function CoachDashboard({ onClose }) {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
-  const [debugInfo, setDebugInfo] = useState(null);
   const [filter, setFilter] = useState("pending_coach");
   const [editingId, setEditingId] = useState(null);
+  const [exerciseNames, setExerciseNames] = useState([]);
+
+  async function loadExerciseNames() {
+    setExerciseNames(await fetchExerciseNames());
+  }
 
   async function load() {
     setLoading(true);
@@ -360,18 +529,6 @@ export default function CoachDashboard({ onClose }) {
     // Refresh first, matching the fix applied elsewhere — cheap
     // insurance against the same session-timing issue showing up here.
     await supabase.auth.refreshSession();
-
-    const { data: sessionData } = await supabase.auth.getUser();
-    const { data: coachRow } = await supabase
-      .from("coaches")
-      .select("user_id, name")
-      .eq("user_id", sessionData?.user?.id)
-      .maybeSingle();
-    setDebugInfo({
-      sessionUserId: sessionData?.user?.id || "none",
-      sessionEmail: sessionData?.user?.email || "none",
-      coachRowFound: Boolean(coachRow),
-    });
 
     const { data, error } = await supabase
       .from("submissions")
@@ -406,6 +563,7 @@ export default function CoachDashboard({ onClose }) {
 
   useEffect(() => {
     load();
+    loadExerciseNames();
   }, []);
 
   const filtered = submissions.filter((s) => (filter === "all" ? true : s.status === filter));
@@ -437,13 +595,6 @@ export default function CoachDashboard({ onClose }) {
             </button>
           ))}
         </div>
-
-        {debugInfo && (
-          <div className="text-[10px] font-body text-brand-light/60 mb-4 border border-white/10 rounded-sm p-2 space-y-0.5">
-            <p>Logged in as: {debugInfo.sessionEmail} ({debugInfo.sessionUserId})</p>
-            <p>Coach row found for this ID: {debugInfo.coachRowFound ? "yes" : "NO, this is the problem"}</p>
-          </div>
-        )}
 
         {loadError && (
           <p className="text-brand-orange text-sm font-body mb-4 border border-brand-orange/40 bg-brand-orange/5 rounded-sm p-3">
@@ -484,6 +635,8 @@ export default function CoachDashboard({ onClose }) {
                   <div className="mt-3">
                     <SubmissionEditor
                       submission={s}
+                      exerciseNames={exerciseNames}
+                      onExerciseAdded={loadExerciseNames}
                       onSaved={() => {
                         setEditingId(null);
                         load();

@@ -82,6 +82,7 @@ function AppInner() {
     function applyResult(data) {
       if (data.status === "assigned" && data.template_programmes) {
         setSubmissionResult({
+          id: data.id,
           status: "assigned",
           goal: data.goal_label,
           plan: {
@@ -93,12 +94,13 @@ function AppInner() {
         });
       } else if (data.status === "ready" && data.manual_programme) {
         setSubmissionResult({
+          id: data.id,
           status: "ready",
           goal: data.goal_label,
           plan: data.manual_programme,
         });
       } else {
-        setSubmissionResult({ status: "pending_coach", goal: data.goal_label, plan: null });
+        setSubmissionResult({ id: data.id, status: "pending_coach", goal: data.goal_label, plan: null });
       }
     }
 

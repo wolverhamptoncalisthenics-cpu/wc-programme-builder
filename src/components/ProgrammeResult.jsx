@@ -1,17 +1,12 @@
 import { useState } from "react";
 import { Zap, Calendar, RotateCcw } from "lucide-react";
-import ExerciseRow from "./ExerciseRow";
+import WorkoutTable from "./WorkoutTable";
 
 export default function ProgrammeResult({ result, goal, onRestart }) {
   const [view, setView] = useState("quick");
-  const [expandedVideo, setExpandedVideo] = useState(null);
-
-  function toggle(key) {
-    setExpandedVideo((prev) => (prev === key ? null : key));
-  }
 
   return (
-    <div className="w-full max-w-md mx-auto bg-black/20 border border-white/10 rounded-md p-6 space-y-6">
+    <div className="w-full max-w-3xl mx-auto bg-black/20 border border-white/10 rounded-md p-6 space-y-6">
       <div>
         <span className="font-display font-bold text-brand-orange text-xs tracking-widest uppercase">
           {result.focus}
@@ -22,7 +17,7 @@ export default function ProgrammeResult({ result, goal, onRestart }) {
         <p className="text-brand-light text-sm mt-3 leading-relaxed font-body">{result.summary}</p>
       </div>
 
-      <div className="flex border border-white/15 rounded-sm overflow-hidden">
+      <div className="flex border border-white/15 rounded-sm overflow-hidden max-w-md">
         <button
           onClick={() => setView("quick")}
           className={`flex-1 py-2 font-display font-bold uppercase text-sm tracking-wide flex items-center justify-center gap-1.5 transition-colors ${
@@ -42,81 +37,47 @@ export default function ProgrammeResult({ result, goal, onRestart }) {
       </div>
 
       {view === "quick" && (
-        <div className="space-y-3">
+        <div className="space-y-6">
           {result.quickPlan.days.map((d, i) => (
-            <div key={i} className="border border-white/15 rounded-sm p-4">
+            <div key={i}>
               <div className="flex items-baseline justify-between mb-2">
                 <span className="font-display font-bold uppercase text-brand-orange text-sm tracking-wide">
                   {d.day}
                 </span>
                 <span className="text-brand-light text-xs font-body">{d.focus}</span>
               </div>
-              <ul className="space-y-2">
-                {d.exercises.map((ex, j) => {
-                  const key = `q-${i}-${j}`;
-                  return (
-                    <ExerciseRow
-                      key={key}
-                      name={ex.name}
-                      prescription={ex.prescription}
-                      videoUrl={ex.videoUrl}
-                      notes={ex.notes}
-                      videoKey={key}
-                      expanded={expandedVideo === key}
-                      onToggle={toggle}
-                    />
-                  );
-                })}
-              </ul>
+              <WorkoutTable exercises={d.exercises} />
             </div>
           ))}
         </div>
       )}
 
       {view === "progression" && (
-        <div className="space-y-3">
+        <div className="space-y-6">
           {result.progression.phases.map((p, i) => (
-            <div key={i} className="border border-white/15 rounded-sm p-4">
+            <div key={i}>
               <span className="font-display font-bold uppercase text-brand-orange text-sm tracking-wide">
                 {p.phase}
               </span>
-              <p className="text-brand-light text-xs mt-0.5 mb-2 font-body">{p.focus}</p>
-              <div className="space-y-2">
-                <div>
-                  <span className="text-brand-light text-xs uppercase tracking-wide font-display font-bold">
-                    Goals
-                  </span>
-                  <ul className="mt-1 space-y-1">
-                    {p.goals.map((g, j) => (
-                      <li key={j} className="text-sm text-white/90 flex gap-2 font-body">
-                        <span className="text-brand-orange">•</span>
-                        {g}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <span className="text-brand-light text-xs uppercase tracking-wide font-display font-bold">
-                    Key work
-                  </span>
-                  <ul className="mt-1 space-y-2">
-                    {p.keyExercises.map((ex, j) => {
-                      const key = `p-${i}-${j}`;
-                      return (
-                        <ExerciseRow
-                          key={key}
-                          name={ex.name}
-                          prescription={ex.prescription}
-                          videoUrl={ex.videoUrl}
-                          notes={ex.notes}
-                          videoKey={key}
-                          expanded={expandedVideo === key}
-                          onToggle={toggle}
-                        />
-                      );
-                    })}
-                  </ul>
-                </div>
+              <p className="text-brand-light text-xs mt-0.5 mb-3 font-body">{p.focus}</p>
+              <div>
+                <span className="text-brand-light text-xs uppercase tracking-wide font-display font-bold">
+                  Goals
+                </span>
+                <ul className="mt-1 mb-3 space-y-1">
+                  {p.goals.map((g, j) => (
+                    <li key={j} className="text-sm text-white/90 flex gap-2 font-body">
+                      <span className="text-brand-orange">•</span>
+                      {g}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <span className="text-brand-light text-xs uppercase tracking-wide font-display font-bold">
+                Key work
+              </span>
+              <div className="mt-1">
+                <WorkoutTable exercises={p.keyExercises} />
               </div>
             </div>
           ))}
