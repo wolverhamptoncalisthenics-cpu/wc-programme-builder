@@ -11,21 +11,11 @@ function emptyDay(exerciseNames) {
   return { day: "", focus: "", exercises: [emptyExercise(exerciseNames)] };
 }
 
-function emptyPhase(exerciseNames) {
-  return {
-    phase: "",
-    focus: "",
-    goals: [""],
-    keyExercises: [emptyExercise(exerciseNames)],
-  };
-}
-
 function emptyForm(exerciseNames) {
   return {
     summary: "",
     focus: "",
     days: [emptyDay(exerciseNames)],
-    phases: [emptyPhase(exerciseNames)],
   };
 }
 
@@ -153,98 +143,6 @@ function DayEditor({ days, onChange, exerciseNames }) {
         className="text-brand-orange text-xs font-body flex items-center gap-1 hover:text-white transition-colors"
       >
         <Plus className="w-3 h-3" /> Add day
-      </button>
-    </div>
-  );
-}
-
-function GoalFields({ list, onChange }) {
-  function update(i, value) {
-    const next = [...list];
-    next[i] = value;
-    onChange(next);
-  }
-  return (
-    <div className="space-y-1.5">
-      {list.map((g, i) => (
-        <div key={i} className="flex gap-2">
-          <input
-            value={g}
-            onChange={(e) => update(i, e.target.value)}
-            placeholder="e.g. 6 strict pull-ups"
-            className="flex-1 bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
-          />
-          <button
-            onClick={() => onChange(list.filter((_, idx) => idx !== i))}
-            className="text-brand-light hover:text-brand-orange shrink-0"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      ))}
-      <button
-        onClick={() => onChange([...list, ""])}
-        className="text-brand-orange text-xs font-body flex items-center gap-1 hover:text-white transition-colors"
-      >
-        <Plus className="w-3 h-3" /> Add goal
-      </button>
-    </div>
-  );
-}
-
-function PhaseEditor({ phases, onChange, exerciseNames }) {
-  function update(i, field, value) {
-    const next = [...phases];
-    next[i] = { ...next[i], [field]: value };
-    onChange(next);
-  }
-  return (
-    <div className="space-y-4">
-      {phases.map((p, i) => (
-        <div key={i} className="border border-white/10 rounded-sm p-3 space-y-2">
-          <div className="flex gap-2">
-            <input
-              value={p.phase}
-              onChange={(e) => update(i, "phase", e.target.value)}
-              placeholder="Weeks 1-4: Foundation"
-              className="flex-1 bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
-            />
-            <button
-              onClick={() => onChange(phases.filter((_, idx) => idx !== i))}
-              className="text-brand-light hover:text-brand-orange shrink-0"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </div>
-          <input
-            value={p.focus}
-            onChange={(e) => update(i, "focus", e.target.value)}
-            placeholder="Phase focus"
-            className="w-full bg-white/5 border border-white/15 rounded-sm px-2 py-1.5 text-xs text-white font-body"
-          />
-          <div>
-            <span className="text-brand-light text-[10px] uppercase tracking-wide font-display font-bold">
-              Goals
-            </span>
-            <GoalFields list={p.goals} onChange={(v) => update(i, "goals", v)} />
-          </div>
-          <div>
-            <span className="text-brand-light text-[10px] uppercase tracking-wide font-display font-bold">
-              Key exercises
-            </span>
-            <ExerciseFields
-              list={p.keyExercises}
-              onChange={(v) => update(i, "keyExercises", v)}
-              exerciseNames={exerciseNames}
-            />
-          </div>
-        </div>
-      ))}
-      <button
-        onClick={() => onChange([...phases, emptyPhase(exerciseNames)])}
-        className="text-brand-orange text-xs font-body flex items-center gap-1 hover:text-white transition-colors"
-      >
-        <Plus className="w-3 h-3" /> Add phase
       </button>
     </div>
   );
@@ -379,7 +277,6 @@ function SubmissionEditor({ submission, onSaved, onCancel, exerciseNames, onExer
           summary: submission.manual_programme.summary || "",
           focus: submission.manual_programme.focus || "",
           days: submission.manual_programme.quickPlan?.days || [emptyDay(exerciseNames)],
-          phases: submission.manual_programme.progression?.phases || [emptyPhase(exerciseNames)],
         }
       : emptyForm(exerciseNames)
   );
@@ -394,7 +291,6 @@ function SubmissionEditor({ submission, onSaved, onCancel, exerciseNames, onExer
       summary: form.summary,
       focus: form.focus,
       quickPlan: { days: form.days },
-      progression: { phases: form.phases },
     };
     const { error: updateError } = await supabase
       .from("submissions")
@@ -469,19 +365,6 @@ function SubmissionEditor({ submission, onSaved, onCancel, exerciseNames, onExer
           <DayEditor
             days={form.days}
             onChange={(v) => setForm((f) => ({ ...f, days: v }))}
-            exerciseNames={exerciseNames}
-          />
-        </div>
-      </div>
-
-      <div>
-        <span className="text-brand-light text-[10px] uppercase tracking-wide font-display font-bold">
-          Progression
-        </span>
-        <div className="mt-1">
-          <PhaseEditor
-            phases={form.phases}
-            onChange={(v) => setForm((f) => ({ ...f, phases: v }))}
             exerciseNames={exerciseNames}
           />
         </div>
