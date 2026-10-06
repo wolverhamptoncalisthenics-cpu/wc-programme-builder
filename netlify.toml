@@ -1,0 +1,29 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/generate"
+  to = "/.netlify/functions/generate"
+  status = 200
+
+[[redirects]]
+  from = "/api/notify-coach"
+  to = "/.netlify/functions/notify-coach"
+  status = 200
+
+[[redirects]]
+  from = "/api/notify-client"
+  to = "/.netlify/functions/notify-client"
+  status = 200
+
+[[redirects]]
+  from = "/api/create-checkout-session"
+  to = "/.netlify/functions/create-checkout-session"
+  status = 200
+
+[[redirects]]
+  from = "/api/confirm-checkout"
+  to = "/.netlify/functions/confirm-checkout"
+  status = 200
