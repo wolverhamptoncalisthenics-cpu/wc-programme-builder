@@ -27,6 +27,17 @@ function AppInner() {
   const [unlockedGoals, setUnlockedGoals] = useState([]);
   const [confirmingCheckout, setConfirmingCheckout] = useState(false);
 
+  // Whenever the logged-in account changes — logging out, logging in
+  // as someone else, switching between a client and coach account on
+  // the same device — reset back to the main site and clear out
+  // whatever the previous account's state was. Without this, briefly
+  // stale data from the last account could flash up before the new
+  // account's own data (or lack of it) loads in.
+  useEffect(() => {
+    setView("site");
+    setSubmissionResult(null);
+  }, [user?.id]);
+
   useEffect(() => {
     if (loading) return;
     // Coach accounts shouldn't see a "your programme" status on their
