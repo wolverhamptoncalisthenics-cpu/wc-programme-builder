@@ -27,6 +27,17 @@ function AppInner() {
   const [unlockedGoals, setUnlockedGoals] = useState([]);
   const [confirmingCheckout, setConfirmingCheckout] = useState(false);
 
+  // Whenever the logged-in account changes — logging out, logging in
+  // as someone else, switching between a client and coach account on
+  // the same device — reset back to the main site and clear out
+  // whatever the previous account's state was. Without this, briefly
+  // stale data from the last account could flash up before the new
+  // account's own data (or lack of it) loads in.
+  useEffect(() => {
+    setView("site");
+    setSubmissionResult(null);
+  }, [user?.id]);
+
   useEffect(() => {
     if (loading) return;
     // Coach accounts shouldn't see a "your programme" status on their
@@ -179,7 +190,7 @@ function AppInner() {
     return <SetNewPasswordPage />;
   }
 
-  if (view === "account" && user) {
+  if (view === "account" && user && !isCoach) {
     return (
       <div className="min-h-screen w-full bg-brand-dark">
         <Nav onGoHome={() => setView("site")} onOpenAccount={() => setView("account")} />
@@ -242,7 +253,14 @@ function AppInner() {
           </h2>
         </div>
 
-        {confirmingCheckout ? (
+        {isCoach ? (
+          <div className="max-w-sm mx-auto text-center">
+            <p className="text-brand-light text-sm font-body">
+              You're logged in as a coach, so this quiz isn't shown to you here. Use the Coach
+              Dashboard in the header to manage client programmes.
+            </p>
+          </div>
+        ) : confirmingCheckout ? (
           <div className="max-w-md mx-auto text-center py-10 space-y-3">
             <Loader2 className="w-6 h-6 animate-spin text-brand-orange mx-auto" />
             <p className="text-brand-light text-sm font-body">Confirming your payment...</p>
