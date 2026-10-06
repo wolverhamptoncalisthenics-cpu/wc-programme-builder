@@ -1,0 +1,56 @@
+// ─────────────────────────────────────────────────────────────
+// GOALS
+// Free goals are open to everyone. Paid goals show a lock and price,
+// with a "Pay to unlock" button that starts a real Stripe payment
+// (see netlify/functions/create-checkout-session.js and
+// confirm-checkout.js). Once paid, the unlock is recorded against the
+// person's account in the unlocked_goals table, not on their device.
+//
+// Note: the `id` values below are internal keys only (used to match
+// database rows and environment variable names) — they're never shown
+// to users.
+//
+// To change a price, edit `price` below (this is just the displayed
+// text — the actual amount charged comes from the Stripe Price you
+// set up, see README). Each paid goal needs a matching Stripe Price
+// ID set as an environment variable in Netlify named:
+//   STRIPE_PRICE_FIRST_STRICT_PULL_UP
+//   STRIPE_PRICE_PRESS_HANDSTAND
+// (the id, uppercased, with hyphens turned to underscores, prefixed
+// with STRIPE_PRICE_)
+// ─────────────────────────────────────────────────────────────
+export const GOALS = [
+  { id: "general-strength", label: "General strength & mobility", tier: "free" },
+  { id: "flexibility", label: "Flexibility & movement quality", tier: "free" },
+  { id: "handstand-basics", label: "Handstand basics", tier: "free" },
+  {
+    id: "first-strict-pull-up",
+    label: "First pull-up",
+    tier: "paid",
+    price: "£49.99",
+    product: "Tim's First Pull-Up Programme",
+    coach: "Tim",
+  },
+  {
+    id: "press-handstand",
+    label: "Press handstand",
+    tier: "paid",
+    price: "£49.99",
+    product: "Tom's Press Handstand Programme",
+    coach: "Tom",
+  },
+];
+
+// ─────────────────────────────────────────────────────────────
+// The exercise list itself now lives in the database (see
+// supabase/add-workouts-goals.sql) so coaches can add to it from the
+// dashboard — src/lib/exercises.js fetches it.
+// ─────────────────────────────────────────────────────────────
+
+// Accepts a full YouTube URL in any common format (watch?v=, youtu.be/,
+// shorts/) and pulls out just the video ID needed for embedding.
+export function extractYouTubeId(url) {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtube\.com\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]{6,})/);
+  return match ? match[1] : null;
+}
